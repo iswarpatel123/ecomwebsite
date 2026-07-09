@@ -1,20 +1,39 @@
-dist
-.wrangler
-.output
-.vercel
-.netlify
-.vinxi
+# dependencies
+node_modules/
+**/node_modules/
+
+# Output directories
+dist/
+**/dist/
+.output/
+**/.output/
+.nitro/
+**/.nitro/
+.wrangler/
+**/.wrangler/
+.vercel/
+**/.vercel/
+.netlify/
+**/.netlify/
+.vinxi/
+**/.vinxi/
 app.config.timestamp_*.js
+
+# Turborepo cache
+.turbo/
+**/.turbo/
 
 # Environment
 .env
 .env*.local
 
-# dependencies
-/node_modules
+# Logs
+server.log
+*.log
 
 # IDEs and editors
-/.idea
+.idea/
+**/.idea/
 .project
 .classpath
 *.launch

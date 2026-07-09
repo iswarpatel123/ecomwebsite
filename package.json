@@ -1,22 +1,21 @@
 {
-  "name": "example-basic",
+  "name": "dropshipping-monorepo",
+  "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
-    "start": "vite start",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@solidjs/meta": "^0.29.4",
-    "@solidjs/router": "^0.15.0",
-    "@solidjs/start": "2.0.0-alpha.2",
-    "solid-js": "^1.9.5",
-    "vite": "^7.0.0",
-    "@solidjs/vite-plugin-nitro-2": "^0.1.0"
-  },
   "engines": {
     "node": ">=22"
   },
-  "devDependencies": {}
+  "scripts": {
+    "compile": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  },
+  "packageManager": "pnpm@10.30.3"
 }
