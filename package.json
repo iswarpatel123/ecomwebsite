@@ -10,13 +10,33 @@
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",
-    "dev": "turbo run dev"
+    "dev": "turbo run dev",
+    "clone-tools": "tsx packages/clone-tools/src/cli.ts",
+    "extract-site": "tsx packages/clone-tools/src/bin/extract-site.ts",
+    "capture-reference": "tsx packages/clone-tools/src/bin/capture-reference.ts",
+    "download-assets": "tsx packages/clone-tools/src/bin/download-assets.ts",
+    "query-source": "tsx packages/clone-tools/src/bin/query-source.ts",
+    "run-clone": "tsx packages/clone-tools/src/bin/run-clone.ts",
+    "clone-site": "tsx packages/clone-tools/src/bin/run-clone.ts",
+    "capture-states": "tsx packages/clone-tools/src/bin/capture-reference.ts",
+    "compare-screenshots": "tsx packages/clone-tools/src/bin/compare-screenshots.ts",
+    "deploy:site": "bash scripts/deploy-site.sh"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/node": "^26.1.1",
+    "tsx": "^4.19.2",
     "turbo": "^2.4.0",
     "typescript": "^5.7.3",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.5",
+    "wrangler": "^4.113.0"
   },
-  "packageManager": "pnpm@10.30.3"
+  "packageManager": "pnpm@10.30.3",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "@parcel/watcher"
+    ]
+  }
 }

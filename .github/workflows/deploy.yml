@@ -1,84 +1,97 @@
-name: Multi-Tenant Pages Deployment
+name: Deploy Sites (CF Pages SSG)
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Site slug (e.g. furniture). Empty = all changed sites."
+        required: false
+        default: ""
 
 jobs:
-  detect-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 10.30.3
 
-      - name: Get pnpm store directory
+      - name: pnpm store path
         shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - name: Cache pnpm store
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
 
-      - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
 
-      - name: Validate Shared Code & Types
-        run: pnpm build
-
-      # Continuous Deployment on Main Branch (Independent Site deployments)
-      - name: Deploy changed sites to Cloudflare Pages
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      - name: Deploy site(s)
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         shell: bash
         run: |
-          # Use Turborepo to build changed applications
-          # Compare with previous commit to isolate change set
-          CHANGED_APPS=$(pnpm turbo list --filter="...[HEAD~1]" --json | jq -r '.packages[] | select(.name | startswith("@dropshipping/site-")) | .name')
+          set -euo pipefail
 
-          if [ -z "$CHANGED_APPS" ]; then
-            echo "No site templates modified. Skipping individual pages deployments."
+          deploy_one() {
+            local slug="$1"
+            echo "=== Deploy $slug ==="
+            ./scripts/deploy-site.sh "$slug"
+          }
+
+          if [[ -n "${{ github.event.inputs.site }}" ]]; then
+            deploy_one "${{ github.event.inputs.site }}"
             exit 0
           fi
 
-          for APP in $CHANGED_APPS; do
-            echo "Processing deploy for application: $APP"
+          # On push: deploy site-* packages changed vs previous commit
+          mapfile -t CHANGED < <(
+            pnpm turbo run build --filter='...[HEAD~1]' --dry-run=json 2>/dev/null \
+              | node -e '
+                  let d=""; process.stdin.on("data",c=>d+=c); process.stdin.on("end",()=>{
+                    try {
+                      const j=JSON.parse(d);
+                      const pkgs=j.packages||j.tasks?.map(t=>t.package)||[];
+                      const names=Array.isArray(pkgs)?pkgs:Object.keys(pkgs);
+                      for (const n of names) {
+                        if (typeof n==="string" && n.startsWith("@dropshipping/site-"))
+                          console.log(n.replace("@dropshipping/site-",""));
+                      }
+                    } catch { /* fallback below */ }
+                  });
+                '
+          )
 
-            # Extract folder directory name (e.g. @dropshipping/site-furniture -> furniture)
-            APP_DIR=$(echo "$APP" | sed 's|@dropshipping/site-||')
+          if [[ ${#CHANGED[@]} -eq 0 || -z "${CHANGED[0]:-}" ]]; then
+            # Fallback: path-based
+            mapfile -t CHANGED < <(
+              git diff --name-only HEAD~1 HEAD 2>/dev/null | sed -n 's|^sites/\([^/]*\)/.*|\1|p' | sort -u \
+                | while read s; do
+                    [[ -f "sites/$s/package.json" ]] || continue
+                    node -p "require('./sites/$s/package.json').name.startsWith('@dropshipping/site-') ? '$s' : ''"
+                  done | grep -v '^$' || true
+            )
+          fi
 
-            # Build specified site
-            pnpm --filter "$APP" build
+          if [[ ${#CHANGED[@]} -eq 0 || -z "${CHANGED[0]:-}" ]]; then
+            echo "No site changes; skip deploy."
+            exit 0
+          fi
 
-            # Publish to Cloudflare Pages via Wrangler CLI
-            # Each site maps to its own separate Cloudflare Pages project
-            PROJECT_NAME="ecom-dropship-$APP_DIR"
-            echo "Publishing build output to Pages Project: $PROJECT_NAME..."
-
-            npx wrangler pages deploy "sites/$APP_DIR/.output/public" \
-              --project-name="$PROJECT_NAME" \
-              --branch="main" \
-              --commit-dirty=true
+          for slug in "${CHANGED[@]}"; do
+            deploy_one "$slug"
           done

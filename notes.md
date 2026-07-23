@@ -1,49 +1,98 @@
- To run individual sites in this monorepo like sites/furniture/, here are the key approaches:
+## Run a site
 
- Direct Site Navigation
+```bash
+cd sites/furniture && pnpm dev          # :3001
+pnpm --filter @dropshipping/site-furniture build
+```
 
- Since each site is an independent pnpm workspace with its own scripts:
+Build = **SSG** (Nitro `static` + prerender). Output: `sites/<slug>/.output/public` (HTML/assets only — **no** Pages Functions / Workers for storefronts).
 
- ```bash
-   # Navigate to the furniture site
-   cd sites/furniture
+```bash
+npx serve sites/furniture/.output/public   # local preview of static output
+```
 
-   # Run the site locally
-   npm run dev        # vite dev - Runs the development server
-   npm run build      # vite build - Builds for production
-   npm start          # vite start - Starts the built production server
-   npm run preview    # vite preview - Preview the production build
- ```
+New routes: link them in the app (crawlLinks) or add to `prerender.routes` in that site’s `vite.config.ts`.
 
- Monorepo Scripts (Turborepo)
+---
 
- The root monorepo provides turborepo scripts that can target specific sites:
+## Deploy storefronts (Cloudflare Pages, static)
 
- ```bash
-   # Run only the furniture site from the root
-   npx turbo run dev --filter="@dropshipping/site-furniture"
+One **Pages project per site**: `ecom-dropship-<slug>` (e.g. `ecom-dropship-furniture`).
 
-   # Build only the furniture site from the root
-   npx turbo run build --filter="@dropshipping/site-furniture"
+```bash
+export CLOUDFLARE_API_TOKEN=...   # Pages Edit
+export CLOUDFLARE_ACCOUNT_ID=...
 
-   # Run all sites from the root
-   npx turbo run dev    # Runs all sites in parallel
-   npx turbo run build  # Builds all sites
- ```
+chmod +x scripts/deploy-site.sh
+./scripts/deploy-site.sh furniture
+# or: pnpm deploy:site furniture
+```
 
- What Each Command Does
+First deploy creates the Pages project. URL: `https://ecom-dropship-furniture.pages.dev`.
 
- - vite dev: Development server with hot module replacement, local API mocking, and SolidJS development features
- - vite build: Production build optimized for Cloudflare Pages deployment (generates Cloudflare Pages-compatible output)
- - vite start: Starts the statically pre-rendered site for local production testing
- - vite preview: Preview server for testing the production build locally
+**GitHub (optional):** push repo → secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` → workflow `.github/workflows/deploy.yml` deploys changed sites on `main`, or manual `workflow_dispatch` with `site=furniture`.
 
- Architecture Context
+Custom domain: Pages project → Custom domains (no CF for SaaS required).
 
- From AGENTS.md:
- - Each sites/* is a "Niche-specific apps (NOT shared, custom-tailored layout/UX)"
- - Sites have "independent CI workflows" in .github/workflows/
- - All sites deploy to their own "dedicated Cloudflare Pages project"
- - The vite.config.ts in each site is configured with preset: "cloudflare-pages"
+---
 
- This means you can develop, test, and deploy each niche site (furniture, saunas, etc.) completely independently without affecting other sites in the monorepo.
+## Architecture (current plan)
+
+| Layer | Hosting | Notes |
+|--------|---------|--------|
+| Storefronts `sites/*` | CF Pages **static only** | SSG; free page views; no Workers quota |
+| Checkout API (shared) | **One** CF Worker/Pages Function | All sites call the same backend; not built yet |
+| CF for SaaS / gateway Worker / per-site Functions | **Out of scope** | Do not use for v1 |
+
+---
+
+## Shared checkout backend (TODO — not built)
+
+Goal: **one** Stripe checkout service reused by every storefront (not one function per site).
+
+1. Create e.g. `infra/checkout-api` (or a single Pages Function project) with:
+   - `POST /checkout/session` — body: `{ siteId, lineItems[], successUrl, cancelUrl }` → Stripe Checkout Session → `{ url }`
+   - `POST /webhooks/stripe` — verify signature, record order
+2. Secrets: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (one Stripe account or map `siteId` → keys).
+3. CORS: allow each storefront origin (`*.pages.dev` + custom domains).
+4. Sites: cart in client; “Checkout” → `fetch(CHECKOUT_API + '/checkout/session')` → `location.href = url`.
+5. Env per site: `VITE_CHECKOUT_API_URL`, `VITE_SITE_ID`.
+6. Deploy that Worker **once**; storefront deploys stay static-only.
+
+Until then, storefronts are content/marketing only.
+
+---
+
+## Bootstrap empty site
+
+```bash
+./tools/init-site/init-site.sh <slug>
+cd sites/<slug> && pnpm dev
+```
+
+Template already uses SSG `vite.config.ts`.
+
+---
+
+## Clone workflow (brief)
+
+- Workspace: `.cloning/_template` → `.cloning/<slug>/`
+- Agents: planner-extractor → section-worker → integrator → visual-qa → dom-functional-qa
+- Validate: `pnpm --filter @dropshipping/site-<slug> run typecheck|build|test:visual|test:e2e`
+
+```bash
+pnpm install -D -w sites/<slug> @playwright/test pixelmatch pngjs sharp
+npx playwright install chromium
+```
+
+---
+
+## Monorepo scripts
+
+```bash
+pnpm --filter @dropshipping/site-furniture dev|build
+npx turbo run build --filter="@dropshipping/site-furniture"
+pnpm deploy:site furniture
+```
+
+Ignore `infra/saas-provision` for v1 (CF for SaaS — not used).

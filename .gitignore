@@ -18,6 +18,8 @@ dist/
 .vinxi/
 **/.vinxi/
 app.config.timestamp_*.js
+__pycache__/
+.venv/
 
 # Turborepo cache
 .turbo/
@@ -41,6 +43,7 @@ server.log
 
 # Temp
 gitignore
+Perfect-Web-Clone
 
 # System Files
 .DS_Store

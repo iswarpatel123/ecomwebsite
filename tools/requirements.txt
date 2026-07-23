@@ -1,0 +1,5 @@
+# Dependencies for tools/clone_workflow
+# Core contracts, source queries, workers, and screenshot diffs use stdlib only.
+playwright>=1.49.0
+httpx>=0.28.0
+Pillow>=11.0.0

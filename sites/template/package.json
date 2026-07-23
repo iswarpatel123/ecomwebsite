@@ -1,0 +1,39 @@
+{
+  "name": "@dropshipping/template-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev --port 3000 --host 127.0.0.1 --strictPort",
+    "build": "vite build",
+    "start": "vite start",
+    "preview": "vite preview --port 3100 --host 127.0.0.1 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test --config playwright.config.ts --project e2e",
+    "test:visual": "playwright test --config playwright.config.ts --project visual"
+  },
+  "dependencies": {
+    "@dropshipping/analytics": "workspace:*",
+    "@dropshipping/config-validation": "workspace:*",
+    "@dropshipping/core-commerce": "workspace:*",
+    "@dropshipping/stripe-client": "workspace:*",
+    "@dropshipping/ui-primitives": "workspace:*",
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^0.15.0",
+    "@solidjs/start": "2.0.0-alpha.2",
+    "solid-js": "^1.9.5",
+    "vite": "^7.0.0",
+    "@solidjs/vite-plugin-nitro-2": "^0.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "@types/node": "^26.1.1",
+    "@types/pngjs": "^6.0.5",
+    "pixelmatch": "^6.0.0",
+    "pngjs": "^7.0.0",
+    "typescript": "^5.7.3"
+  }
+}
