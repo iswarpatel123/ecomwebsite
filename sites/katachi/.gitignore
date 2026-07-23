@@ -1,0 +1,7 @@
+node_modules
+dist
+.output
+.nitro
+test-results
+.venv
+.DS_Store
