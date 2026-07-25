@@ -74,13 +74,11 @@ echo ""
 
 # Check for size selection (75/99)
 echo "5. Checking size selection (75/99)..."
-if curl -s http://127.0.0.1:3001 | grep -q 'hero__choice-button\|data-hk="00000000100000000000120"'; then
+if curl -s http://127.0.0.1:3001 | grep -q 'hero__choice-button'; then
     echo "✓ PASS - Size options exist"
-    # Check for 75 and 99
-    SIZE_75=$(curl -s http://127.0.0.1:3001 | sed -n '/<section[^>]*class="hero"[^>]*>/,/<\/section>/p' | grep -o 'hero__choice-button' | wc -l)
-    SIZE_99=$(curl -s http://127.0.0.1:3001 | sed -n '/<section[^>]*class="hero"[^>]*>/,/<\/section>/p' | grep -o 'hero__choice-button' | wc -l)
-    if [ "$SIZE_75" -gt 0 ] && [ "$SIZE_99" -gt 0 ]; then
-        echo "✓ PASS - Size 75 and 99 options found"
+    SIZE_COUNT=$(curl -s http://127.0.0.1:3001 | sed -n '/<section[^>]*class="hero"[^>]*>/,/<\/section>/p' | grep -o 'hero__choice-button' | wc -l)
+    if [ "$SIZE_COUNT" -gt 0 ]; then
+        echo "✓ PASS - Size options found ($SIZE_COUNT buttons)"
     else
         echo "✗ FAIL - Size options not found"
     fi
@@ -98,9 +96,9 @@ else
 fi
 echo ""
 
-# Check for quantity input
+# Check for quantity input (now in ProductDescription component)
 echo "7. Checking quantity controls..."
-if curl -s http://127.0.0.1:3001 | grep -q 'hero__quantity\|aria-label="Quantity"'; then
+if curl -s http://127.0.0.1:3001 | grep -q 'pd__quantity\|aria-label="Quantity"'; then
     echo "✓ PASS - Quantity controls exist"
 else
     echo "✗ FAIL - Quantity controls not found"
@@ -116,9 +114,9 @@ else
 fi
 echo ""
 
-# Check for add to cart button
+# Check for add to cart button (now in ProductDescription component)
 echo "9. Checking add to cart button..."
-if curl -s http://127.0.0.1:3001 | grep -q 'hero__add\|Add to cart'; then
+if curl -s http://127.0.0.1:3001 | grep -q 'pd__add-to-cart\|Add to cart'; then
     echo "✓ PASS - Add to cart button exists"
 else
     echo "✗ FAIL - Add to cart button not found"
@@ -127,11 +125,9 @@ echo ""
 
 # Check for no remote https URLs in hero section
 echo "10. Checking for no remote https URLs in hero..."
-# Extract hero section HTML
 HERO_START=$(curl -s http://127.0.0.1:3001 | grep -o '<section[^>]*class="hero"[^>]*>' | wc -l)
 if [ "$HERO_START" -gt 0 ]; then
     echo "✓ PASS - Hero section found"
-    # Check for https URLs in the hero section
     HTTPS_COUNT=$(curl -s http://127.0.0.1:3001 | sed -n '/<section[^>]*class="hero"[^>]*>/,/<\/section>/p' | grep -c 'https://' || true)
     if [ "$HTTPS_COUNT" -eq 0 ]; then
         echo "✓ PASS - No remote https URLs in hero section"
@@ -143,15 +139,15 @@ else
 fi
 echo ""
 
-# Check for product title
+# Check for product title (now in ProductDescription component)
 echo "11. Checking product information..."
-if curl -s http://127.0.0.1:3001 | grep -q 'hero__title\|hero-product-title'; then
+if curl -s http://127.0.0.1:3001 | grep -q 'pd__title\|hero-product-title'; then
     echo "✓ PASS - Product title element exists"
 else
     echo "✗ FAIL - Product title element not found"
 fi
 
-if curl -s http://127.0.0.1:3001 | grep -q 'hero__price\|hero__payments'; then
+if curl -s http://127.0.0.1:3001 | grep -q 'pd__price\|pd__payment-plan'; then
     echo "✓ PASS - Product price and payments exist"
 else
     echo "✗ FAIL - Product price and payments not found"
@@ -197,8 +193,27 @@ else
 fi
 echo ""
 
+# Check for accordion sections (new feature)
+echo "16. Checking accordion sections..."
+ACCORDION_COUNT=$(curl -s http://127.0.0.1:3001 | grep -c 'pd__accordion-item' || true)
+if [ "$ACCORDION_COUNT" -gt 0 ]; then
+    echo "✓ PASS - Accordion sections found ($ACCORDION_COUNT)"
+else
+    echo "✗ FAIL - Accordion sections not found"
+fi
+echo ""
+
+# Check for benefits section
+echo "17. Checking benefits section..."
+if curl -s http://127.0.0.1:3001 | grep -q 'pd__benefits\|pd__benefit'; then
+    echo "✓ PASS - Benefits section exists"
+else
+    echo "✗ FAIL - Benefits section not found"
+fi
+echo ""
+
 # Check for console errors
-echo "16. Checking for console errors..."
+echo "18. Checking for console errors..."
 CONSOLE_ERRORS=$(curl -s http://127.0.0.1:3001 | grep -c 'console.error\|console.warn' || true)
 if [ "$CONSOLE_ERRORS" -eq 0 ]; then
     echo "✓ PASS - No console errors found in HTML"

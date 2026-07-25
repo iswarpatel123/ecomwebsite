@@ -72,6 +72,30 @@ cd sites/<slug> && pnpm dev
 
 Template already uses SSG `vite.config.ts`.
 
+## Prerequisites (new laptop)
+
+### Install Node.js
+```bash
+nvm install 26.5.0  # matches CI
+nvm use 26.5.0
+```
+
+### Install pnpm
+```bash
+npm install -g pnpm
+```
+
+### Install Playwright
+```bash
+pnpm install -D -w @playwright/test
+npx playwright install chromium
+```
+
+### Clone repo
+```bash
+git clone <repo-url> && cd ecomwebsite
+```
+
 ---
 
 ## Clone workflow (brief)
@@ -79,11 +103,6 @@ Template already uses SSG `vite.config.ts`.
 - Workspace: `.cloning/_template` → `.cloning/<slug>/`
 - Agents: planner-extractor → section-worker → integrator → visual-qa → dom-functional-qa
 - Validate: `pnpm --filter @dropshipping/site-<slug> run typecheck|build|test:visual|test:e2e`
-
-```bash
-pnpm install -D -w sites/<slug> @playwright/test pixelmatch pngjs sharp
-npx playwright install chromium
-```
 
 ---
 

@@ -42,34 +42,6 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
-  packages/clone-tools:
-    dependencies:
-      pixelmatch:
-        specifier: ^6.0.0
-        version: 6.0.0
-      playwright:
-        specifier: ^1.50.0
-        version: 1.61.1
-      pngjs:
-        specifier: ^7.0.0
-        version: 7.0.0
-      sharp:
-        specifier: ^0.34.1
-        version: 0.34.5
-    devDependencies:
-      '@types/node':
-        specifier: ^26.1.1
-        version: 26.1.1
-      '@types/pngjs':
-        specifier: ^6.0.5
-        version: 6.0.5
-      tsx:
-        specifier: ^4.19.2
-        version: 4.23.0
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-
   packages/config-validation:
     dependencies:
       zod:
@@ -86,6 +58,12 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/storefront-patterns:
+    devDependencies:
+      solid-js:
+        specifier: ^1.9.5
+        version: 1.9.14
+
   packages/stripe-client:
     dependencies:
       '@dropshipping/core-commerce':
@@ -95,6 +73,8 @@ importers:
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
+
+  packages/ui: {}
 
   packages/ui-primitives:
     dependencies:
@@ -123,6 +103,9 @@ importers:
       '@dropshipping/ui-primitives':
         specifier: workspace:*
         version: link:../../packages/ui-primitives
+      '@repo/storefront-patterns':
+        specifier: workspace:*
+        version: link:../../packages/storefront-patterns
       '@solidjs/meta':
         specifier: ^0.29.4
         version: 0.29.4(solid-js@1.9.14)

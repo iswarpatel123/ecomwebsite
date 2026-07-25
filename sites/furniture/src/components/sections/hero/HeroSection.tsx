@@ -1,4 +1,5 @@
 import { For, createSignal } from "solid-js";
+import { ProductDescription, type AccordionSection } from "@repo/storefront-patterns";
 import MediaGalleryGrid from "../media-gallery/MediaGallerySection.jsx";
 import "./hero.css";
 
@@ -25,24 +26,60 @@ const colours: Colour[] = [
   { name: "Suffolk Sandstone", src: "/assets/koala/img-048-96d3c8a7.png" },
 ];
 
+const detailSections: AccordionSection[] = [
+  {
+    id: "description",
+    title: "Product Description",
+    content: "The comfiest, most versatile sofa bed around. Lounge, sleep, and make space for whatever life throws at you. Our signature CloudCell™ comfort technology, perfected over years, built into a sofa.",
+  },
+  {
+    id: "assembly",
+    title: "Assembly Instructions",
+    content: "Your Wanda Sofa Bed arrives ready to assemble in minutes. No tools, no handyman, no YouTube tutorials. Clear instructions, click-together components, and everything you need is in the box.",
+  },
+  {
+    id: "features",
+    title: "Key Features",
+    content: "<ul><li>Flip-from-sofa-to-bed design</li><li>Signature CloudCell™ comfort</li><li>Removable, machine-washable covers</li><li>Water and stain-resistant fabric</li><li>No tools required for assembly</li></ul>",
+  },
+  {
+    id: "dimensions",
+    title: "Dimensions",
+    content: "<p><strong>Sofa mode:</strong> W 99cm × D 85cm × H 82cm</p><p><strong>Bed mode:</strong> W 99cm × D 160cm × H 45cm</p><p><strong>Seat height:</strong> 45cm</p><p><strong>Weight:</strong> 42kg</p>",
+  },
+  {
+    id: "materials",
+    title: "Materials",
+    content: "<p><strong>Frame:</strong> Kiln-dried hardwood, steel reinforcements</p><p><strong>Cushion fill:</strong> CloudCell™ foam + fibre top</p><p><strong>Upholstery:</strong> 100% polyester, water-resistant finish</p><p><strong>Legs:</strong> Solid timber, black finish</p>",
+  },
+  {
+    id: "care",
+    title: "Care",
+    content: "<p>Remove covers by unzipping. Machine wash cold on gentle cycle. Tumble dry low or line dry. Re-zip and restore. Spot clean frame with damp cloth.</p>",
+  },
+  {
+    id: "returns",
+    title: "120-Day Free Returns",
+    content: "<p>Buy with complete confidence. Every Wanda Sofa Bed comes with 120-day free returns. That's four months to live on it, sleep on it, and love it. If it's not right, we'll collect it for free.</p>",
+  },
+  {
+    id: "delivery",
+    title: "Delivery & Package Size",
+    content: "<p><strong>Free delivery</strong> to most metro areas. Ships in 2 boxes:</p><ul><li>Box 1: 105cm × 55cm × 45cm (28kg)</li><li>Box 2: 105cm × 55cm × 45cm (14kg)</li></ul><p>Express delivery available at checkout.</p>",
+  },
+];
+
 export function HeroSection() {
   const [selectedImage, setSelectedImage] = createSignal(0);
   const [size, setSize] = createSignal("99");
   const [colour, setColour] = createSignal(0);
-  const [quantity, setQuantity] = createSignal(1);
-  const [added, setAdded] = createSignal(false);
 
   const changeImage = (index: number) => setSelectedImage((index + images.length) % images.length);
-  const adjustQuantity = (amount: number) => setQuantity((value) => Math.max(1, Math.min(10, value + amount)));
-  const addToCart = () => {
-    setAdded(true);
-    window.setTimeout(() => setAdded(false), 2400);
-  };
 
   return (
     <section class="hero" aria-labelledby="hero-product-title">
       <div class="hero__layout">
-        {/* Left column: main image + desktop media grid (scrolls with page; summary sticks) */}
+        {/* Left column: main image + desktop media grid */}
         <div class="hero__media" aria-label="Product photographs">
           <div class="hero__main-image-wrap">
             <img class="hero__main-image" src={images[selectedImage()].src} alt={images[selectedImage()].alt} />
@@ -54,10 +91,8 @@ export function HeroSection() {
             </button>
           </div>
 
-          {/* Desktop only — replaces thumbnails */}
           <MediaGalleryGrid />
 
-          {/* Mobile / tablet only — thumbnails replace the grid */}
           <div class="hero__thumbnails" role="list" aria-label="Choose product photograph">
             <For each={images}>
               {(image, index) => (
@@ -77,47 +112,65 @@ export function HeroSection() {
           </div>
         </div>
 
+        {/* Right column: product description panel */}
         <div class="hero__summary">
-          <a class="hero__back" href="#main-content">Sofa beds</a>
-          <div class="hero__rating" aria-label="Rated 4.9 out of 5 stars from 222 reviews"><span aria-hidden="true">★★★★★</span> <u>4.9 (222 Reviews)</u></div>
-          <h1 id="hero-product-title" class="hero__title">Wanda Sofa Bed</h1>
-          <p class="hero__price">$3,295</p>
-          <p class="hero__payments">or 4 interest-free payments of $823.75 with <strong>Afterpay</strong></p>
-          <p class="hero__description">The comfiest, most versatile sofa bed around. Lounge, sleep, and make space for whatever life throws at you.</p>
+          <ProductDescription
+            title="Wanda Sofa Bed"
+            price="$3,295"
+            breadcrumbLabel="Sofa beds"
+            breadcrumbHref="#"
+            rating={4.9}
+            reviewCount={222}
+            paymentPlan="or 4 interest-free payments of $823.75 with Afterpay"
+            benefits={[
+              { icon: "/assets/koala/img-039-4432bd64.svg", label: "Free delivery" },
+              { icon: "/assets/koala/img-040-cf67cad6.svg", label: "120-night trial" },
+              { icon: "/assets/koala/img-041-563a3c24.svg", label: "10-year warranty" },
+            ]}
+            sections={detailSections}
+            renderOptions={() => (
+              <>
+                <fieldset class="hero__choice">
+                  <legend>Size <strong>{size()}"</strong></legend>
+                  <div class="hero__choices">
+                    <For each={["75", "99"]}>
+                      {(option) => (
+                        <button
+                          type="button"
+                          class="hero__choice-button"
+                          classList={{ "is-selected": size() === option }}
+                          aria-pressed={size() === option}
+                          onClick={() => setSize(option)}
+                        >
+                          {option}"
+                        </button>
+                      )}
+                    </For>
+                  </div>
+                </fieldset>
 
-          <fieldset class="hero__choice">
-            <legend>Size <strong>{size()}"</strong></legend>
-            <div class="hero__choices">
-              <For each={["75", "99"]}>
-                {(option) => <button type="button" class="hero__choice-button" classList={{ "is-selected": size() === option }} aria-pressed={size() === option} onClick={() => setSize(option)}>{option}"</button>}
-              </For>
-            </div>
-          </fieldset>
-
-          <fieldset class="hero__choice hero__choice--colour">
-            <legend>Colour <strong>{colours[colour()].name}</strong></legend>
-            <div class="hero__swatches">
-              <For each={colours}>
-                {(option, index) => <button type="button" class="hero__swatch" classList={{ "is-selected": colour() === index() }} aria-label={option.name} aria-pressed={colour() === index()} onClick={() => setColour(index())}><img src={option.src} alt="" aria-hidden="true" /></button>}
-              </For>
-            </div>
-          </fieldset>
-
-          <div class="hero__benefits" aria-label="Purchase benefits">
-            <div><img src="/assets/koala/img-039-4432bd64.svg" alt="" aria-hidden="true" /><span>Free delivery</span></div>
-            <div><img src="/assets/koala/img-040-cf67cad6.svg" alt="" aria-hidden="true" /><span>120-night trial</span></div>
-            <div><img src="/assets/koala/img-041-563a3c24.svg" alt="" aria-hidden="true" /><span>10-year warranty</span></div>
-          </div>
-
-          <div class="hero__purchase">
-            <div class="hero__quantity" aria-label="Quantity">
-              <button type="button" aria-label="Decrease quantity" onClick={() => adjustQuantity(-1)} disabled={quantity() === 1}>−</button>
-              <output aria-live="polite">{quantity()}</output>
-              <button type="button" aria-label="Increase quantity" onClick={() => adjustQuantity(1)} disabled={quantity() === 10}>+</button>
-            </div>
-            <button class="hero__add" type="button" onClick={addToCart}>{added() ? "Added to cart" : `Add to cart • $${(3295 * quantity()).toLocaleString()}`}</button>
-          </div>
-          <p class="hero__notice" aria-live="polite">{added() ? "Wanda Sofa Bed has been added to your cart." : ""}</p>
+                <fieldset class="hero__choice hero__choice--colour">
+                  <legend>Colour <strong>{colours[colour()].name}</strong></legend>
+                  <div class="hero__swatches">
+                    <For each={colours}>
+                      {(option, index) => (
+                        <button
+                          type="button"
+                          class="hero__swatch"
+                          classList={{ "is-selected": colour() === index() }}
+                          aria-label={option.name}
+                          aria-pressed={colour() === index()}
+                          onClick={() => setColour(index())}
+                        >
+                          <img src={option.src} alt="" aria-hidden="true" />
+                        </button>
+                      )}
+                    </For>
+                  </div>
+                </fieldset>
+              </>
+            )}
+          />
         </div>
       </div>
     </section>

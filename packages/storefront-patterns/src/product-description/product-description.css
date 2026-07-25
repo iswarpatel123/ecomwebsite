@@ -1,0 +1,204 @@
+/* -------------------------------------------------------------------------- */
+/* ProductDescription — reusable PDP detail panel                              */
+/* -------------------------------------------------------------------------- */
+
+/* ---- Root ----------------------------------------------------------------- */
+.pd {
+  font-family: var(--pd-font, inherit);
+  color: var(--pd-text, #1a1a1a);
+  max-width: var(--pd-max-width, 32rem);
+}
+
+/* ---- Breadcrumb ----------------------------------------------------------- */
+.pd__breadcrumb {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: var(--pd-muted, #6b6b6b);
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+}
+.pd__breadcrumb:hover {
+  text-decoration: underline;
+}
+
+/* ---- Rating --------------------------------------------------------------- */
+.pd__rating {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.25rem;
+}
+.pd__stars {
+  color: var(--pd-star, #f5a623);
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+.pd__review-link {
+  font-size: 0.75rem;
+  color: var(--pd-muted, #6b6b6b);
+  text-decoration: underline;
+}
+.pd__review-link:hover {
+  color: var(--pd-text, #1a1a1a);
+}
+
+/* ---- Title ---------------------------------------------------------------- */
+.pd__title {
+  font-size: var(--pd-title-size, 1.5rem);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+}
+
+/* ---- Price ---------------------------------------------------------------- */
+.pd__price-block {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.pd__price {
+  font-size: var(--pd-price-size, 1.25rem);
+  font-weight: 600;
+}
+.pd__compare-price {
+  font-size: 0.875rem;
+  color: var(--pd-muted, #6b6b6b);
+  text-decoration: line-through;
+}
+.pd__payment-plan {
+  font-size: 0.75rem;
+  color: var(--pd-muted, #6b6b6b);
+  margin: 0 0 1rem;
+}
+
+/* ---- Benefits ------------------------------------------------------------- */
+.pd__benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--pd-border, #e5e5e5);
+  border-bottom: 1px solid var(--pd-border, #e5e5e5);
+}
+.pd__benefit {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--pd-muted, #6b6b6b);
+}
+.pd__benefit img {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+/* ---- Options slot --------------------------------------------------------- */
+.pd__options {
+  margin-bottom: 1rem;
+}
+
+/* ---- Purchase controls ---------------------------------------------------- */
+.pd__purchase {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.pd__quantity {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--pd-border, #e5e5e5);
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+.pd__quantity button {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.pd__quantity button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.pd__quantity output {
+  min-width: 2rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.pd__add-to-cart {
+  flex: 1;
+  height: 2.75rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: var(--pd-cta-bg, #1a1a1a);
+  color: var(--pd-cta-text, #fff);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.pd__add-to-cart:hover {
+  background: var(--pd-cta-hover, #333);
+}
+
+/* ---- Accordion ------------------------------------------------------------ */
+.pd__accordion {
+  border-top: 1px solid var(--pd-border, #e5e5e5);
+}
+.pd__accordion-item {
+  border-bottom: 1px solid var(--pd-border, #e5e5e5);
+}
+.pd__accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.875rem 0;
+  border: none;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+.pd__accordion-trigger:focus-visible {
+  outline: 2px solid var(--pd-focus, #005fcc);
+  outline-offset: -2px;
+  border-radius: 2px;
+}
+.pd__accordion-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pd__accordion-icon {
+  font-size: 1.125rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.pd__accordion-panel {
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+}
+.pd__accordion-panel[hidden] {
+  display: block;
+  max-height: 0;
+  visibility: hidden;
+}
+.pd__accordion-item.is-open .pd__accordion-panel {
+  max-height: 50rem;
+  visibility: visible;
+}
+.pd__accordion-content {
+  padding: 0 0 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--pd-body, #333);
+}

@@ -76,9 +76,7 @@
 .hero__gallery-nav:focus-visible,
 .hero__thumbnail:focus-visible,
 .hero__choice-button:focus-visible,
-.hero__swatch:focus-visible,
-.hero__quantity button:focus-visible,
-.hero__add:focus-visible {
+.hero__swatch:focus-visible {
   outline: 3px solid #8c9271;
   outline-offset: 3px;
 }
@@ -124,59 +122,20 @@
   padding-top: 4px;
 }
 
-.hero__back {
-  display: inline-block;
-  margin: 0 0 16px;
-  color: var(--muted);
-  font-size: 13px;
-  text-decoration: none;
-}
-
-.hero__back:hover {
-  text-decoration: underline;
-}
-
-.hero__rating {
-  margin-bottom: 14px;
-  color: #777870;
-  font-size: 13px;
-}
-
-.hero__rating span {
-  color: #171814;
-  letter-spacing: 2px;
-}
-
-.hero__title {
-  margin: 0;
-  font-size: 40px;
-  font-weight: 500;
-  letter-spacing: -1.4px;
-  line-height: 1.2;
-}
-
-.hero__price {
-  margin: 12px 0 0;
-  font-size: 22px;
-  font-weight: 500;
-}
-
-.hero__payments {
-  margin: 3px 0 22px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.hero__payments strong {
-  color: #121212;
-}
-
-.hero__description {
-  margin: 0 0 23px;
-  color: #45463f;
-  font-size: 14px;
-  line-height: 1.65;
+/* Override ProductDescription custom properties to match hero design */
+.hero__summary {
+  --pd-font: inherit;
+  --pd-text: #121212;
+  --pd-muted: #73736d;
+  --pd-border: #d9dad2;
+  --pd-star: #171814;
+  --pd-cta-bg: #6f735e;
+  --pd-cta-text: #fff;
+  --pd-cta-hover: #5d624f;
+  --pd-focus: #8c9271;
+  --pd-max-width: none;
+  --pd-title-size: 40px;
+  --pd-price-size: 22px;
 }
 
 .hero__choice {
@@ -257,79 +216,6 @@
   border-bottom: 1px solid var(--line);
 }
 
-.hero__benefits div {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: #44463f;
-  font-size: 11px;
-  line-height: 1.3;
-}
-
-.hero__benefits img {
-  width: 23px;
-  height: 23px;
-}
-
-.hero__purchase {
-  display: flex;
-  gap: 10px;
-}
-
-.hero__quantity {
-  display: flex;
-  flex: 0 0 108px;
-  height: 48px;
-  align-items: center;
-  justify-content: space-around;
-  border: 1px solid var(--line);
-  background: #fff;
-}
-
-.hero__quantity button {
-  width: 32px;
-  height: 100%;
-  border: 0;
-  background: transparent;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.hero__quantity button:disabled {
-  color: #bbb;
-  cursor: not-allowed;
-}
-
-.hero__quantity output {
-  font-size: 14px;
-}
-
-.hero__add {
-  flex: 1;
-  min-height: 48px;
-  border: 0;
-  border-radius: 24px;
-  background: var(--olive);
-  color: #fff;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.hero__add:hover {
-  background: #5d624f;
-}
-
-.hero__notice {
-  min-height: 20px;
-  margin: 10px 0 0;
-  color: var(--olive);
-  font-size: 12px;
-  text-align: center;
-}
-
 @media (max-width: 1100px) {
   .hero {
     padding: 12px 24px 50px;
@@ -388,69 +274,22 @@
 
   .hero__summary {
     padding: 0;
-  }
-
-  .hero__back {
-    margin-bottom: 10px;
-  }
-
-  .hero__rating {
-    margin-bottom: 10px;
-  }
-
-  .hero__title {
-    font-size: 30px;
-    letter-spacing: -0.8px;
-  }
-
-  .hero__price {
-    font-size: 20px;
-  }
-
-  .hero__payments {
-    margin-bottom: 18px;
-  }
-
-  .hero__description {
-    font-size: 13px;
+    --pd-title-size: 30px;
+    --pd-price-size: 20px;
   }
 
   .hero__benefits {
     margin-top: 24px;
     padding: 13px 0;
   }
-
-  .hero__purchase {
-    position: sticky;
-    bottom: 12px;
-    z-index: 2;
-    padding: 8px;
-    background: rgba(245, 246, 243, 0.96);
-  }
-
-  .hero__quantity {
-    flex-basis: 92px;
-  }
-
-  .hero__add {
-    font-size: 12px;
-  }
 }
 
 @media (max-width: 380px) {
-  .hero__title {
-    font-size: 27px;
+  .hero__summary {
+    --pd-title-size: 27px;
   }
 
   .hero__swatch {
     width: 34px;
-  }
-
-  .hero__quantity {
-    flex-basis: 84px;
-  }
-
-  .hero__purchase {
-    gap: 6px;
   }
 }
