@@ -1,174 +1,220 @@
-# Workflow: clone a website from a URL and slug
+# Clone workflow (flexible, main-agent driven)
 
-## Mission and inputs
+## Role of the main agent
 
-Receive a reference `URL`, produce an independent SolidStart/SolidJS clone at `sites/<slug>`. The site boundary is enforced: do not modify another site or shared package merely to match the reference.
+You are the **coordinator**. You interpret the human task, pick the **minimum** set of subagents, and pass each one a **focused brief** so *your* context stays small (token savings).
 
-The reference DOM, computed CSS, CSS rules/variables, assets, screenshots, and captured interaction data are the source of truth. The pipeline is:
+Subagents do the heavy work: browsing, screenshots, downloads, implementing sections, wiring routes, QA. You decide **what** and **in what order**; they decide **how** within their guidelines.
+
+There is **no fixed step ladder**. A task may need only media download, only one section rebuild, multi-site mashup into patterns, or a fuller site assemble. Skip agents that do not apply.
+
+**Max turns per subagent:** ≥ 50 unless the task is trivially small.
+
+---
+
+## Goals (not pixel-perfect)
+
+| Prefer | Avoid |
+|--------|--------|
+| Faithful **layout, hierarchy, copy intent, interactions** | Pixel-diff cloning |
+| **Screenshots + vision** as primary reference | Full DOM dump for every job |
+| **Section-level** work | Cloning entire PDPs when only a band is needed |
+| Local media when the clone must ship files | Remote image/video URLs in `sites/*` |
+| Patterns under shared/storefront libs when asked | Copy-pasting the same section into many sites by hand without a pattern |
+
+Documented third-party **embeds** (YouTube/Vimeo) may keep embed URLs. Final product imagery/video files should be **local** under the target site (or pattern package) when the task requires them.
+
+Site boundary: do not edit other sites or shared packages just to “match” a reference unless the task explicitly says so (e.g. “add to storefront patterns”).
+
+---
+
+## Example tasks → how you might orchestrate
+
+These are **illustrative**, not checklists.
+
+### A. “Clone section X from site1 and section Y from site2 into storefront patterns; use on `sites/furniture`”
+
+1. **extractor** (or **general-vision**): screenshot + short notes for section X and Y only (two URLs, scoped viewports).
+2. Optional **media** path: if patterns need real assets, run extraction/download for those sections only.
+3. **section-worker** or **builder**: implement pattern components (paths given in your brief).
+4. **builder** / **integrator**: wire patterns into `sites/furniture`.
+5. **visual-qa** only if you care about acceptance; **not** pixel-perfect.
+6. **fixer** only on real failures.
+
+### B. “Download media from site X PDP and use them in site X”
+
+1. **extractor** (structure/media mode) or scripts via **planner-extractor** / **general**: capture PDP, list `image_usages` / `media_usages`.
+2. Scoped download → `sites/<slug>/public/assets/...` + manifest.
+3. **builder** or **section-worker**: point components at local paths.
+4. Skip full clone pipeline.
+
+### C. “Rebuild hero with complex carousel transitions”
+
+1. **extractor**: multi-shot — idle, after next/prev, key breakpoints; note transition behavior in notes (not every CSS rule).
+2. **section-worker** + brief: approximate transitions in SolidJS/CSS (good enough, not frame-identical).
+3. Light visual QA on states you care about.
+
+### D. “Full-ish storefront from one URL”
+
+1. Screenshots / section inventory first.
+2. Contracts or freeform briefs per section.
+3. Parallel **section-worker**s if independent.
+4. **integrator** for shell/routes.
+5. QA + **fixer** as needed.
+
+---
+
+## Decision tree (main agent)
 
 ```text
-live URL -> Playwright DOM/CSS/assets/state data -> scoped contracts
-          -> isolated SolidJS section workers -> integrator
-          -> visual + DOM/functional QA -> automatic repair loops
+Task arrives
+  │
+  ├─ Need to SEE layout / states?     → extractor (screenshots default)
+  │     └─ Complex UI / clicks?       → multi-screenshot / click journey
+  │
+  ├─ Need LOCAL media files?          → DOM/asset extract + scoped download
+  │     (only then prefer full extract tools)
+  │
+  ├─ Need implement UI?               → section-worker (one section)
+  │                                     builder (broader site/pattern work)
+  │
+  ├─ Need shell/routes/assembly?      → integrator
+  │
+  ├─ Need quality check?              → visual-qa (vision, structural)
+  │     └─ Failures?                  → fixer
+  │
+  └─ None of the above fit?           → general / general-vision
 ```
 
-Preserve semantic structure, responsive behavior, controls, links, and important transitions. Use a screenshot to aid implementation if needed.
-Final imagery must be local; no browser image proxy or remote image URL may remain in `sites/<slug>`.
+**Default clone path = screenshots (+ optional short notes), not “download the whole site.”**  
+Full Playwright extract + media download is an **opt-in** when the brief needs real files or structural selectors.
 
-You are the coordinator and must dispatch the subagents below. Max turns per agent has to be 50 or more
+---
 
-### Tools
-- `Playwright` - Browser automation for extraction
-- `pnpm` - Package management and workspace execution
-- Agents - Orchestrated by the coordinator, each agent has access to read, write, bash, and edit tools
+## Agent roster
 
-## Required artifacts
+Definitions live under `.pi/agents/`. Each file has **general guidelines**. Your dispatch prompt must add **task-specific guidance**: URLs, slug, target paths, section names, viewports, which screenshots matter, whether media download is required, acceptance bar, and what *not* to touch.
 
-`run-clone` creates the workspace from `.cloning/_template`:
+| Agent | File | When to use |
+|-------|------|-------------|
+| **extractor** | `extractor.md` | Screenshots, multi-state captures, click journeys, optional DOM/CSS/asset listing. Vision-capable. Default for “look at the reference.” |
+| **planner-extractor** | `planner-extractor.md` | When you want contracts + scoped media download + workspace notes in one pass (heavier). Prefer only if that packaging helps workers. |
+| **section-worker** | `section-worker.md` | Implement **one** section under `sites/<slug>/src/components/sections/<name>/` (or paths you specify). |
+| **builder** | `builder.md` | Broader implementation: multi-file site work, storefront patterns, wiring product data, non-section paths. |
+| **integrator** | `integrator.md` | App shell, routes, global CSS, compose sections into a page. |
+| **visual-qa** | `visual-qa.md` | Structural/visual comparison (layout, hierarchy, obvious mismatches)—**not** pixel-perfect gate. |
+| **fixer** | `fixer.md` | Minimal repairs from QA reports or your failure list. |
+| **general** | `general.md` | Catch-all when no specialist fits (scripts, packaging, docs, odd glue). |
+| **general-vision** | `general-vision.md` | Catch-all that needs to **see** images/screenshots. |
+
+Use **general** / **general-vision** freely when a specialized agent would fight its own scope rules.
+
+---
+
+
+Ask subagents to **write artifacts to disk** (`.cloning/<slug>/...` or site paths) and return **paths + short summary**, not full extraction dumps.
+
+Parallelize independent section-workers. Serialize when one agent’s outputs are another’s inputs.
+
+---
+
+## Artifacts (use what you need)
+
+Workspace is optional scaffolding, not a mandatory tree for every job.
 
 ```text
-.cloning/<slug>/
-  source/
-    extraction.json       # extraction document
-    section-notes.md      # section specifications
-  reference/
-    <slug>-desktop.png
-    <slug>-tablet.png
-    <slug>-mobile.png
-    <slug>-desktop-popup.png  # user-provided popup screenshot
-  assets/
-    manifest.json         # URL -> local public asset mapping
-  contracts/
-    plan.md               # integration plan
-    01-section1.md        # section contracts
-    02-section2.md
-    ...
-    index.json            # contracts index
-  reports/
-    visual-qa.md          # visual comparison report (must write)
-    dom-functional.md     # DOM/functional QA report (must write)
-    repair-log.md         # repair attempts
-    final.md              # final verification
+.cloning/<slug>/                    # optional run workspace
+  source/                           # notes, extraction.json if used
+  reference/                        # screenshots (primary reference)
+  assets/                           # copy of manifest if useful
+  contracts/                        # only if you generate contracts
+  reports/                          # QA / extraction reports
 ```
 
-## Agents orchestration protocol
+Sites still own runtime assets, e.g. `sites/<slug>/public/assets/...`.
 
-### Step 1: Planner/Extractor Agent
-**Agent to use**: `planner-extractor`
-**Location**: `.pi/agents/planner-extractor.md`
+For multi-source mashups, use clear names:  
+`.cloning/<run-id>/reference/site1-hero-desktop.png`, etc.
 
-**What it does**: Extracts DOM/CSS/assets from the target URL, handles popups/modals, generates **section-scoped** contracts, downloads **usage-mapped** assets, and sets up the workspace.
-
-**Key responsibilities**:
-- Dismiss popups/modals before screenshots (`dismiss_popups=True`; Escape, accept/close, hide residual overlays)
-- If popup cannot be closed, request human screenshot and save it under `reference/<slug>-desktop-popup.png`
-- Extract DOM/CSS/assets at desktop/tablet/mobile viewports with **image usage metadata**
-- Discover visual sections under `main`/`body` (skip header/nav/footer for PDP-focused clones)
-- Download only selected images via `download_from_extraction` (not full asset dump); write manifest `usage_index`
-- Generate contracts with per-section image lists
-- Create extraction.json and section-notes.md (including URL → local path → section map)
-
-**Success criteria**: Clean multi-viewport extraction, scoped assets with usage_index, contracts with section images, workspace organized.
+`run-clone` / `.cloning/_template` may still bootstrap a workspace when useful; do not invent a full tree if a one-off media pull is enough.
 
 ---
 
-### Step 2: Section Worker Agent
-**Agent**: `section-worker`
-**Location**: `.pi/agents/section-worker.md`
+## Modes of extraction
 
-**What it does**: Implements the page section components based on the contract and source extraction.
+### 1. Screenshot-first (default)
 
-**Key responsibilities**:
-- Read all input artifacts (contract, extraction, notes, manifest)
-- Create section components (e.g., HeroSection, FeaturesSection, etc.) based on contracts
-- Create section-specific CSS files with responsive layout
-- Ensure all local assets are used, no remote URLs
-- Support keyboard navigation and accessibility
+- Capture relevant viewports / scroll positions / UI states.
+- Dismiss popups when possible; document if stuck.
+- Short notes: section list, key interactions, colors/fonts if obvious.
+- **No** full asset download.
 
-**Success criteria**: Components exist, exports all sections, all assets rendered, all interactions work, responsive layout correct.
+### 2. Media download (when needed)
 
----
+- Extract with asset listing (`image_usages`, `media_usages`).
+- Download **scoped** URLs only (`download_from_extraction` / curated `download_from_url_list`).
+- Never dump every image on the page.
+- Manifest + `usage_index`; embeds recorded, not downloaded.
 
-### Step 3: Integrator Agent
-**Agent**: `integrator`
+### 3. Interaction / multi-state (when needed)
 
-**What it does**: Assembles the page sections into a working SolidStart site by configuring app shell and routes.
+- Click carousels, tabs, variant swatches, expanders.
+- Save one screenshot per meaningful state.
+- Note behavior for implementers (autoplay, loop, swipe)—approximate in CSS/JS is fine.
 
-**Key responsibilities**:
-- Configure app.tsx (remove template navigation, add section shell)
-- Configure app.css (reset defaults, add base styles)
-- Create/update routes/index.tsx (render all sections)
-- Verify no remote asset URLs exist
-- Run typecheck, build, dev server, e2e and visual tests
-
-**Success criteria**: App shell configured, routes render all sections, all tests pass.
+Tools: `tools/clone_workflow/` (Playwright extractor, image downloader, contracts helpers). System Python: `/usr/bin/python3`. Prefer file-path screenshots, not base64 in JSON.
 
 ---
 
-### Step 4: Visual QA Agent
-**Agent**: `visual-qa`
+## Implementation guidelines (for briefs)
 
-**What it does**: Compares source screenshots against clone screenshots to ensure pixel-accurate reproduction.
-
-**Key responsibilities**:
-- Check for popup artifacts (if popup screenshot exists, crop to clean section)
-- Compare page section screenshots (crop to target area)
-- Verify element counts, positions, sizes, colors, styling match exactly
-- Report any extra/missing elements, styling differences
-- Generate pixel diff PNGs and comparison reports
-
-**Success criteria**: No popup artifacts, page matches source exactly, all acceptance criteria met.
+- SolidStart / SolidJS under `sites/<slug>` (or packages if the task says patterns).
+- Section isolation when using **section-worker**: only that section’s directory.
+- Local media paths from manifest; no hotlinked product images.
+- Responsive enough for desktop + mobile unless scoped otherwise.
+- A11y: labels, keyboard for interactive controls you implement.
+- **Good enough** visual match: structure, spacing rhythm, type hierarchy, CTA emphasis—not 1:1 pixels.
 
 ---
 
-### Step 5: DOM/Functional QA Agent
-**Agent**: `dom-functional-qa` (general-purpose, high thinking)
+## QA and repair (optional loops)
 
-**What it does**: Validates the cloned page sections' semantic structure, functionality, and accessibility.
+Only run QA when the task needs a quality bar.
 
-**Key responsibilities**:
-- Capture DOM snapshots at all viewports
-- Verify semantic markup, headings, ARIA labels, alt attributes
-- Test interactive functionality (buttons, forms, navigation, keyboard)
-- Verify content (brand, title, product information, section-specific elements)
-- Check console for errors, validate against source extraction
+1. **visual-qa**: compare reference screenshots vs clone; report structural issues; write `reports/visual-qa.md` if using `.cloning`.
+3. **fixer**: minimal edits; re-check only what failed; log attempts; stop after ~5 identical failed attempts.
 
-**Success criteria**: Semantic structure correct, all sections rendered, all interactions work, keyboard navigation functional, no console errors.
+Final gates when a full site was assembled (adjust filter to the site):
 
----
-
-### Step 6: Fixer Agent (activated on QA failure)
-**Agent**: `fixer`
-**Location**: `.pi/agents/fixer.md`
-
-**What it does**: Repairs clone failures identified by QA agents, using their written reports as contracts.
-
-**Key responsibilities**:
-- Read `.cloning/<slug>/reports/{visual-qa.md,dom-functional.md}` for failures.
-- Identify the minimal owning file(s) to fix.
-- Apply narrow changes (CSS, markup) without touching other sections.
-- Re-run relevant QA checks and record progress in repair-log.md.
-- Stop after 5 identical repair attempts or when all QA passes.
-
-**Success criteria**: Failing QA transitions to PASS; no regressions introduced.
-
----
-
-## Automatic repair loop
-
-1. After QA agents complete, check `.cloning/<slug>/reports/{visual-qa.md,dom-functional.md}`.
-2. If FAIL status present for any implemented section, **activate Fixer agent** (`fixer.md`).
-3. Fixer reads reports and applies minimal bounded fixes.
-4. Re-run only the failing checks for that section.
-5. If fix succeeds, update reports; if identical repair attempted ≥ 5 times, record in final.md and stop.
-6. Repeat until all QA passes or cap reached.
-
-**Final gate**:
 ```bash
-npm --workspace sites/<slug> run typecheck
-npm --workspace sites/<slug> run build
-npm --workspace sites/<slug> run test:visual
-npm --workspace sites/<slug> run test:e2e
+pnpm --filter @dropshipping/site-<slug> run typecheck
+pnpm --filter @dropshipping/site-<slug> run build
+# tests only if the site has them and the task cares
 ```
 
-**Human input fallback**: When automation fails and human screenshot is needed, provide screenshot of page with popup visible. Visual QA will crop to clean section and report popup as intentional difference.
+---
+
+## Tools available to the ecosystem
+
+- **Playwright** / `tools/clone_workflow` — browse, screenshot, extract, download
+- **pnpm** / Turborepo — workspace install, typecheck, build, deploy scripts
+- **Vision models** — extractor, visual-qa, general-vision (read image files)
+- **Subagents** — isolated contexts; main agent orchestrates
+
+---
+
+## Anti-patterns
+
+- Running the entire Step-1…Step-6 pipeline for a media-only or single-section task
+- Pixel-diff as a hard gate
+- Full-page image dumps “just in case”
+- Pasting multi-MB `extraction.json` into the main agent chat
+- Editing shared packages or other sites without an explicit task
+- Forcing **section-worker** when the work is multi-package / pattern library (**builder** or **general** instead)
+- Skipping **general** / **general-vision** when specialists’ scopes block the real task
+
+---
+
+## Human fallback
+
+If automation cannot clear a popup or captcha, ask for a human screenshot. Continue from that file path; do not block the whole job on perfect automation.

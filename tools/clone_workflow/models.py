@@ -102,6 +102,8 @@ class PageAssets:
     fonts: List[AssetInfo] = field(default_factory=list)
     # url -> list of usage sites (selector, alt, rect) for contract generation
     image_usages: List[Dict[str, Any]] = field(default_factory=list)
+    # video / video-source / video-poster / embed (youtube etc — do not download embeds)
+    media_usages: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -110,10 +112,12 @@ class PageAssets:
             "stylesheets": [asdict(item) for item in self.stylesheets],
             "fonts": [asdict(item) for item in self.fonts],
             "image_usages": self.image_usages,
+            "media_usages": self.media_usages,
             "total_images": self.total_images,
             "total_scripts": self.total_scripts,
             "total_stylesheets": self.total_stylesheets,
             "total_fonts": self.total_fonts,
+            "total_media": len(self.media_usages),
         }
 
     @property

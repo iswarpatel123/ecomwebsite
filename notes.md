@@ -46,20 +46,60 @@ Custom domain: Pages project → Custom domains (no CF for SaaS required).
 
 ---
 
-## Shared checkout backend (TODO — not built)
+## Shared checkout backend (Implemented)
 
 Goal: **one** Stripe checkout service reused by every storefront (not one function per site).
 
-1. Create e.g. `infra/checkout-api` (or a single Pages Function project) with:
-   - `POST /checkout/session` — body: `{ siteId, lineItems[], successUrl, cancelUrl }` → Stripe Checkout Session → `{ url }`
-   - `POST /webhooks/stripe` — verify signature, record order
-2. Secrets: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (one Stripe account or map `siteId` → keys).
-3. CORS: allow each storefront origin (`*.pages.dev` + custom domains).
-4. Sites: cart in client; “Checkout” → `fetch(CHECKOUT_API + '/checkout/session')` → `location.href = url`.
-5. Env per site: `VITE_CHECKOUT_API_URL`, `VITE_SITE_ID`.
-6. Deploy that Worker **once**; storefront deploys stay static-only.
+The checkout backend is implemented as a Cloudflare Worker at `infra/checkout-api` with the following characteristics:
 
-Until then, storefronts are content/marketing only.
+1. **API Endpoints:**
+   - `GET /health`: Returns `{ "status": "ok", "service": "shared-checkout-api" }` for simple health checks.
+   - `POST /checkout/session`: Creates a checkout session.
+     - **Request Body:**
+       ```json
+       {
+         "siteId": "site_furn_01",
+         "lineItems": [
+           {
+             "product": {
+               "id": "p1",
+               "name": "Modern Oak Dining Table",
+               "price": 799.00,
+               "sku": "FURN-OAK-TAB",
+               "niche": "furniture"
+             },
+             "quantity": 1
+           }
+         ],
+         "successUrl": "https://cozy-furniture.example.com/success",
+         "cancelUrl": "https://cozy-furniture.example.com/cancel",
+         "shippingRate": 15.00,
+         "taxRate": 0.08
+       }
+       ```
+     - **Response:** `{ "url": "https://...", "orderId": "ord_..." }`
+     - **Behavior:**
+       - Query the D1 `sites` database to dynamically fetch the `tenantId`. Fallback to preset mapping if D1 is not available.
+       - Calculate the final totals using `@dropshipping/core-commerce`.
+       - If D1 is present, insert a **pending** order to track began checkouts.
+       - If `STRIPE_SECRET_KEY` is set to a real key (doesn't start with `mock_`), make a direct, high-performance HTTP call to the Stripe API (`/v1/checkout/sessions`) to build a real checkout session and return the Stripe URL.
+       - Otherwise, return a **mock checkout session URL** (redirecting directly to `successUrl` with mock query parameters) for easy development and offline testing.
+   - `POST /webhooks/stripe`: Handles webhook notifications from Stripe.
+     - **Headers:** `Stripe-Signature`
+     - **Behavior:**
+       - Verifies the webhook signature using the native Web Crypto API (HMAC-SHA256) when a real `STRIPE_WEBHOOK_SECRET` is configured.
+       - On `checkout.session.completed`, extracts the metadata (`siteId`, `tenantId`, `orderId`), and the customer/shipping details.
+       - If D1 is bound, records the payment by upserting/updating the order status to `'paid'` and storing customer info, shipping addresses, and the payment intent transaction ID.
+
+2. **Secrets Configuration (`wrangler.json` / wrangler secrets):**
+   - `STRIPE_SECRET_KEY`: Stripe Private Secret API Key.
+   - `STRIPE_WEBHOOK_SECRET`: Stripe Webhook Signature Secret.
+
+3. **CORS Support:**
+   - Dynamically reflects incoming origin if request comes from local, `.pages.dev` or custom domains, enabling seamless storefront calls without pre-flight blocks.
+
+4. **Testing the checkout-api:**
+   - Run tests specifically: `pnpm --filter @dropshipping/checkout-api test` or `npx vitest run infra/checkout-api`.
 
 ---
 
@@ -72,6 +112,30 @@ cd sites/<slug> && pnpm dev
 
 Template already uses SSG `vite.config.ts`.
 
+## Prerequisites (new laptop)
+
+### Install Node.js
+```bash
+nvm install 26.5.0  # matches CI
+nvm use 26.5.0
+```
+
+### Install pnpm
+```bash
+npm install -g pnpm
+```
+
+### Install Playwright
+```bash
+pnpm install -D -w @playwright/test
+npx playwright install chromium
+```
+
+### Clone repo
+```bash
+git clone <repo-url> && cd ecomwebsite
+```
+
 ---
 
 ## Clone workflow (brief)
@@ -79,11 +143,6 @@ Template already uses SSG `vite.config.ts`.
 - Workspace: `.cloning/_template` → `.cloning/<slug>/`
 - Agents: planner-extractor → section-worker → integrator → visual-qa → dom-functional-qa
 - Validate: `pnpm --filter @dropshipping/site-<slug> run typecheck|build|test:visual|test:e2e`
-
-```bash
-pnpm install -D -w sites/<slug> @playwright/test pixelmatch pngjs sharp
-npx playwright install chromium
-```
 
 ---
 

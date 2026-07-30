@@ -292,8 +292,17 @@ _ASSET_SCRIPT = r"""
     const url = pickFromSrcset(el.getAttribute('srcset'));
     if (url) pushImage(url, 'picture-source', el.parentElement || el);
   });
-  document.querySelectorAll('video[poster]').forEach((el) => {
+  document.querySelectorAll('video').forEach((el) => {
     if (el.poster) pushImage(el.poster, 'video-poster', el);
+    const vsrc = el.currentSrc || el.src || el.getAttribute('src');
+    if (vsrc) pushImage(vsrc, 'video', el);
+    el.querySelectorAll('source[src]').forEach((s) => {
+      if (s.src || s.getAttribute('src')) pushImage(s.src || s.getAttribute('src'), 'video-source', el);
+    });
+  });
+  document.querySelectorAll('iframe[src]').forEach((el) => {
+    const src = el.src || el.getAttribute('src') || '';
+    if (/youtube|youtu\.be|vimeo|loom\.com|wistia|player\./i.test(src)) pushImage(src, 'embed', el);
   });
   document.querySelectorAll('*').forEach((el) => {
     const image = getComputedStyle(el).backgroundImage || '';
@@ -316,6 +325,10 @@ _ASSET_SCRIPT = r"""
       }
     } catch (_) { /* cross-origin stylesheet */ }
   }
+  // media_usages: videos + embeds (also remain in image_usages for scoring filters)
+  result.media_usages = result.image_usages.filter((u) =>
+    u.type === 'video' || u.type === 'video-source' || u.type === 'video-poster' || u.type === 'embed'
+  );
   // Dedupe flat image list by url keeping richest usage (primary > visible > first)
   const byUrl = new Map();
   for (const item of result.images) {
@@ -559,6 +572,7 @@ class PlaywrightExtractor:
                     stylesheets=_asset_group(assets_value.get("stylesheets", [])),
                     fonts=_asset_group(assets_value.get("fonts", [])),
                     image_usages=list(assets_value.get("image_usages") or []),
+                    media_usages=list(assets_value.get("media_usages") or []),
                 )
                 css_data = await self._extract_css(page, assets, options.extract_css)
                 interactions = await self._extract_interactions(page) if options.capture_interactions else None

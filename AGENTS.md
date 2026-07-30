@@ -13,3 +13,6 @@
 - **Storefronts:** Nitro `preset: "static"` + prerender → `sites/<slug>/.output/public`
 - **Deploy:** `./scripts/deploy-site.sh <slug>` → Pages project `ecom-dropship-<slug>`
 - **Checkout (planned):** one shared CF Function/Worker for all sites — see `notes.md`
+
+# Rules
+* Only read files that are needed

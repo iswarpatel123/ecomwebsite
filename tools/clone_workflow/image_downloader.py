@@ -36,6 +36,9 @@ class ImageDownloadConfig:
     output_format: str = "webp"
     concurrency: int = 8
     include_base64: bool = False
+    # binary/video: skip Pillow; larger timeout/size
+    process_images: bool = True
+    max_bytes: int = 80 * 1024 * 1024  # 80MB hard cap per file
 
 
 @dataclass
@@ -60,10 +63,16 @@ class DownloadedImage:
 
 BROWSER_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "Accept": "*/*",
     "Accept-Language": "en-US,en;q=0.9",
     "Accept-Encoding": "gzip, deflate, br",
 }
+
+IMAGE_TYPES = frozenset({"image", "background-image", "picture-source", "video-poster"})
+VIDEO_TYPES = frozenset({"video", "video-source"})
+EMBED_TYPES = frozenset({"embed"})
+# Never HTTP-download these (keep URL in manifest only).
+SKIP_DOWNLOAD_TYPES = frozenset({"embed", "srcset-candidate"})
 
 
 def _is_svg(url: str, data: bytes) -> bool:
@@ -146,7 +155,19 @@ class ImageDownloader:
     async def __aexit__(self, *_: Any) -> None:
         await self.close()
 
-    async def download_single(self, url: str, index: int) -> DownloadedImage:
+    def _ext_from_url_ct(self, url: str, content_type: str) -> str:
+        path = urlparse(url).path.lower()
+        for ext in ("mp4", "webm", "mov", "m4v", "ogv", "webp", "png", "jpg", "jpeg", "gif", "svg", "avif"):
+            if path.endswith("." + ext):
+                return "jpg" if ext == "jpeg" else ext
+        ct = (content_type or "").split(";")[0].strip().lower()
+        return {
+            "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov",
+            "image/webp": "webp", "image/png": "png", "image/jpeg": "jpg",
+            "image/gif": "gif", "image/svg+xml": "svg",
+        }.get(ct, "bin")
+
+    async def download_single(self, url: str, index: int, *, kind: str = "image") -> DownloadedImage:
         result = DownloadedImage(original_url=url)
         try:
             parsed = urlparse(url)
@@ -162,9 +183,17 @@ class ImageDownloader:
             response.raise_for_status()
             original = response.content
             result.original_size = len(original)
-            processed, width, height, extension = _compress(original, url, self.config)
-            if extension == "original":
-                extension = "bin"
+            if len(original) > self.config.max_bytes:
+                raise ValueError(f"Asset exceeds max_bytes ({len(original)} > {self.config.max_bytes})")
+            ct = response.headers.get("content-type", "application/octet-stream")
+            is_video = kind in VIDEO_TYPES or ct.startswith("video/") or not self.config.process_images
+            if is_video or kind == "binary":
+                extension = self._ext_from_url_ct(url, ct)
+                processed, width, height = original, 0, 0
+            else:
+                processed, width, height, extension = _compress(original, url, self.config)
+                if extension == "original":
+                    extension = self._ext_from_url_ct(url, ct)
             filename = _filename(url, index, extension)
             output_dir = Path(self.config.output_dir)
             output_dir.mkdir(parents=True, exist_ok=True)
@@ -176,9 +205,10 @@ class ImageDownloader:
             result.width = width
             result.height = height
             result.content_type = "image/svg+xml" if extension == "svg" else {
-                "webp": "image/webp", "jpg": "image/jpeg", "png": "image/png"
-            }.get(extension, response.headers.get("content-type", "application/octet-stream"))
-            if self.config.include_base64:
+                "webp": "image/webp", "jpg": "image/jpeg", "png": "image/png",
+                "mp4": "video/mp4", "webm": "video/webm", "mov": "video/quicktime",
+            }.get(extension, ct)
+            if self.config.include_base64 and not is_video:
                 result.base64_data = base64.b64encode(processed).decode("ascii")
             result.success = True
         except Exception as exc:
@@ -186,18 +216,30 @@ class ImageDownloader:
             logger.warning("Asset download failed for %s: %s", url, exc)
         return result
 
-    async def download_batch(self, urls: Iterable[str]) -> List[DownloadedImage]:
+    async def download_batch(
+        self,
+        urls: Iterable[str],
+        *,
+        kinds: Optional[Dict[str, str]] = None,
+    ) -> List[DownloadedImage]:
         unique = list(dict.fromkeys(url for url in urls if url))[: self.config.max_images]
         semaphore = asyncio.Semaphore(max(1, self.config.concurrency))
+        kind_map = kinds or {}
 
         async def one(index: int, url: str) -> DownloadedImage:
             async with semaphore:
-                return await self.download_single(url, index)
+                return await self.download_single(url, index, kind=kind_map.get(url, "image"))
 
         return await asyncio.gather(*(one(i, url) for i, url in enumerate(unique)))
 
-    async def download_manifest(self, urls: Iterable[str], manifest_path: str) -> Dict[str, Any]:
-        results = await self.download_batch(urls)
+    async def download_manifest(
+        self,
+        urls: Iterable[str],
+        manifest_path: str,
+        *,
+        kinds: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        results = await self.download_batch(urls, kinds=kinds)
         entries = [asdict(item) for item in results]
         manifest = {
             "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -207,8 +249,6 @@ class ImageDownloader:
             "succeeded": sum(item.success for item in results),
             "failed": sum(not item.success for item in results),
             "entries": entries,
-            # A direct map makes CSS/HTML URL rewriting deterministic while
-            # retaining per-download diagnostics in ``entries``.
             "url_map": {
                 item.original_url: item.public_path
                 for item in results if item.success and item.public_path
@@ -226,34 +266,49 @@ async def download_images(urls: Iterable[str], config: Optional[ImageDownloadCon
         return await downloader.download_batch(urls)
 
 
-# Hints that usually should not be bulk-downloaded for a focused PDP clone.
-DEFAULT_SKIP_SECTION_HINTS = frozenset({
-    "header-nav", "footer", "360-view",
-})
+DEFAULT_SKIP_SECTION_HINTS = frozenset({"header-nav", "footer", "360-view"})
+
+
+def _merge_usages(assets: Dict[str, Any]) -> List[Dict[str, Any]]:
+    usages = list(assets.get("image_usages") or [])
+    if not usages:
+        usages = list(assets.get("images") or [])
+    # media_usages may duplicate posters; merge by url preferring richer type
+    seen = {u.get("url") for u in usages if isinstance(u, dict)}
+    for m in assets.get("media_usages") or []:
+        if isinstance(m, dict) and m.get("url") and m["url"] not in seen:
+            usages.append(m)
+            seen.add(m["url"])
+    return usages
 
 
 def select_download_urls(
     assets: Dict[str, Any],
     *,
     skip_hints: Optional[Iterable[str]] = None,
+    allow_hints: Optional[Iterable[str]] = None,
     skip_gallery: bool = False,
     primary_only: bool = False,
     max_images: int = 80,
     include_types: Optional[Iterable[str]] = None,
+    include_video: bool = False,
 ) -> List[Dict[str, Any]]:
-    """Pick a bounded, section-aware image list for download.
+    """Pick bounded, section-aware assets. Agent may further trim via download_from_url_list.
 
-    Returns usage dicts (url + selector + section_hint + ...) so the manifest
-    can record where each asset is used. Without this filter, extractors often
-    yield hundreds of srcset candidates and chrome icons.
+    - allow_hints: if set, only those section_hint values (e.g. {'features'})
+    - include_video: add video/video-source (not embeds)
     """
     skip = set(skip_hints if skip_hints is not None else DEFAULT_SKIP_SECTION_HINTS)
     if skip_gallery:
         skip.add("gallery")
-    allowed_types = set(include_types or ("image", "background-image", "picture-source", "video-poster"))
-    usages = list(assets.get("image_usages") or [])
-    if not usages:
-        usages = list(assets.get("images") or [])
+    allow = set(allow_hints) if allow_hints is not None else None
+    if include_types is not None:
+        allowed_types = set(include_types)
+    else:
+        allowed_types = set(IMAGE_TYPES)
+        if include_video:
+            allowed_types |= VIDEO_TYPES
+    usages = _merge_usages(assets)
 
     scored: List[tuple[int, Dict[str, Any]]] = []
     seen: set[str] = set()
@@ -263,16 +318,18 @@ def select_download_urls(
             continue
         if isinstance(usage, dict):
             utype = usage.get("type") or "image"
-            if utype == "srcset-candidate":
+            if utype in SKIP_DOWNLOAD_TYPES:
                 continue
             if utype not in allowed_types:
                 continue
             hint = str(usage.get("section_hint") or "")
             if hint in skip:
                 continue
+            if allow is not None and hint not in allow:
+                continue
             if primary_only and not usage.get("is_primary"):
                 continue
-            if usage.get("is_visible") is False and not usage.get("is_primary"):
+            if usage.get("is_visible") is False and not usage.get("is_primary") and utype not in VIDEO_TYPES:
                 continue
             w = float(usage.get("width") or 0)
             h = float(usage.get("height") or 0)
@@ -282,6 +339,8 @@ def select_download_urls(
                 score += 100
             if usage.get("is_visible"):
                 score += 20
+            if utype in VIDEO_TYPES:
+                score += 30
             score += min(int(area / 1000), 50)
             if hint in {"product", "hero", "features", "testimonials"}:
                 score += 10
@@ -295,34 +354,24 @@ def select_download_urls(
     return [item for _, item in scored[:max_images]]
 
 
-async def download_from_extraction(
-    extraction: Dict[str, Any],
-    *,
-    output_dir: str,
-    public_prefix: str = "/assets",
-    manifest_path: str,
-    skip_gallery: bool = False,
-    max_images: int = 80,
-    config: Optional[ImageDownloadConfig] = None,
-) -> Dict[str, Any]:
-    """Download only section-relevant images and write an enriched manifest."""
-    # Prefer desktop extraction when multi-viewport document is passed.
-    selected = extraction
-    if "extractions" in extraction:
-        extractions = extraction.get("extractions") or []
-        if extractions:
-            selected = max(extractions, key=lambda item: item.get("viewport", {}).get("width", 0))
-    assets = selected.get("assets") or extraction.get("assets") or {}
-    usages = select_download_urls(assets, skip_gallery=skip_gallery, max_images=max_images)
-    urls = [u["url"] for u in usages if u.get("url")]
-    cfg = config or ImageDownloadConfig(output_dir=output_dir, public_prefix=public_prefix, max_images=max_images)
-    cfg.output_dir = output_dir
-    cfg.public_prefix = public_prefix
-    cfg.max_images = max_images
-    async with ImageDownloader(cfg) as downloader:
-        manifest = await downloader.download_manifest(urls, manifest_path)
-    # Enrich with usage context so contracts/agents know where each file belongs.
-    usage_by_url = {u["url"]: u for u in usages}
+def list_embeds(assets: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """YouTube/Vimeo/etc — record in contracts; do not download."""
+    out: List[Dict[str, Any]] = []
+    seen: set[str] = set()
+    for usage in _merge_usages(assets):
+        if not isinstance(usage, dict):
+            continue
+        if (usage.get("type") or "") not in EMBED_TYPES:
+            continue
+        url = usage.get("url")
+        if url and url not in seen:
+            out.append(usage)
+            seen.add(url)
+    return out
+
+
+def _enrich_manifest(manifest: Dict[str, Any], usages: List[Dict[str, Any]], embeds: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+    usage_by_url = {u["url"]: u for u in usages if u.get("url")}
     for entry in manifest.get("entries") or []:
         usage = usage_by_url.get(entry.get("original_url") or "", {})
         entry["selector"] = usage.get("selector")
@@ -330,6 +379,7 @@ async def download_from_extraction(
         entry["alt"] = usage.get("alt")
         entry["is_primary"] = usage.get("is_primary")
         entry["xpath"] = usage.get("xpath")
+        entry["asset_type"] = usage.get("type")
     manifest["usage_index"] = [
         {
             "url": e.get("original_url"),
@@ -338,11 +388,98 @@ async def download_from_extraction(
             "section_hint": e.get("section_hint"),
             "alt": e.get("alt"),
             "is_primary": e.get("is_primary"),
+            "asset_type": e.get("asset_type"),
+            "content_type": e.get("content_type"),
             "success": e.get("success"),
         }
         for e in (manifest.get("entries") or [])
     ]
-    path = Path(manifest_path)
-    path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
-    # Also mirror under .cloning assets if caller passed that path separately.
+    if embeds is not None:
+        manifest["embeds"] = [
+            {"url": e.get("url"), "selector": e.get("selector"), "section_hint": e.get("section_hint"), "type": "embed"}
+            for e in embeds
+        ]
     return manifest
+
+
+def _pick_extraction(extraction: Dict[str, Any]) -> Dict[str, Any]:
+    if "extractions" in extraction:
+        extractions = extraction.get("extractions") or []
+        if extractions:
+            return max(extractions, key=lambda item: item.get("viewport", {}).get("width", 0))
+    return extraction
+
+
+async def download_from_url_list(
+    urls: Iterable[str],
+    *,
+    output_dir: str,
+    public_prefix: str = "/assets",
+    manifest_path: str,
+    kinds: Optional[Dict[str, str]] = None,
+    usages: Optional[List[Dict[str, Any]]] = None,
+    embeds: Optional[List[Dict[str, Any]]] = None,
+    config: Optional[ImageDownloadConfig] = None,
+) -> Dict[str, Any]:
+    """Agent-curated download: pass exact URLs (from extraction analysis). Tool stays dumb."""
+    url_list = list(dict.fromkeys(u for u in urls if u and not str(u).startswith("data:")))
+    kind_map = dict(kinds or {})
+    for u in url_list:
+        if u not in kind_map:
+            low = u.lower().split("?", 1)[0]
+            if any(low.endswith(ext) for ext in (".mp4", ".webm", ".mov", ".m4v", ".ogv")):
+                kind_map[u] = "video"
+            else:
+                kind_map[u] = "image"
+    cfg = config or ImageDownloadConfig(output_dir=output_dir, public_prefix=public_prefix, max_images=max(len(url_list), 1))
+    cfg.output_dir = output_dir
+    cfg.public_prefix = public_prefix
+    cfg.max_images = max(len(url_list), cfg.max_images)
+    # If any video, use longer timeout default when still defaultish
+    if any(kind_map.get(u) in VIDEO_TYPES or kind_map.get(u) == "video" for u in url_list):
+        if cfg.timeout <= 15:
+            cfg.timeout = 60
+    async with ImageDownloader(cfg) as downloader:
+        manifest = await downloader.download_manifest(url_list, manifest_path, kinds=kind_map)
+    return _enrich_manifest(manifest, usages or [{"url": u, "type": kind_map.get(u, "image")} for u in url_list], embeds)
+
+
+async def download_from_extraction(
+    extraction: Dict[str, Any],
+    *,
+    output_dir: str,
+    public_prefix: str = "/assets",
+    manifest_path: str,
+    skip_gallery: bool = False,
+    max_images: int = 80,
+    allow_hints: Optional[Iterable[str]] = None,
+    include_video: bool = False,
+    include_types: Optional[Iterable[str]] = None,
+    config: Optional[ImageDownloadConfig] = None,
+) -> Dict[str, Any]:
+    """Heuristic download from extraction; prefer allow_hints for section-only clones."""
+    selected = _pick_extraction(extraction)
+    assets = selected.get("assets") or extraction.get("assets") or {}
+    usages = select_download_urls(
+        assets,
+        skip_gallery=skip_gallery,
+        max_images=max_images,
+        allow_hints=allow_hints,
+        include_video=include_video,
+        include_types=include_types,
+    )
+    embeds = list_embeds(assets)
+    if allow_hints is not None:
+        allow = set(allow_hints)
+        embeds = [e for e in embeds if str(e.get("section_hint") or "") in allow]
+    urls = [u["url"] for u in usages if u.get("url")]
+    kinds = {u["url"]: (u.get("type") or "image") for u in usages if u.get("url")}
+    cfg = config or ImageDownloadConfig(output_dir=output_dir, public_prefix=public_prefix, max_images=max_images)
+    cfg.output_dir = output_dir
+    cfg.public_prefix = public_prefix
+    cfg.max_images = max_images
+    if include_video and cfg.timeout <= 15:
+        cfg.timeout = 60
+    async with ImageDownloader(cfg) as downloader:
+        manifest = await downloader.download_manifest(urls, manifest_path, kinds=kinds)
+    return _enrich_manifest(manifest, usages, embeds)
