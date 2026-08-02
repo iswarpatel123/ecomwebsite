@@ -45,6 +45,16 @@ server.log
 gitignore
 Perfect-Web-Clone
 
+# Vendored dependency (pip editable install source, cloned from GitHub)
+MetaAdsCollector/
+
+# Meta Ads workflow artifacts (Ad Publishing Workflow)
+sites/*/ads/competitors/**/session.json
+sites/*/ads/competitors/**/media/**
+sites/*/ads/drafts/**/out/**
+sites/*/ads/drafts/**/video/**
+sites/*/ads/drafts/**/source/**
+
 # System Files
 .DS_Store
 Thumbs.db

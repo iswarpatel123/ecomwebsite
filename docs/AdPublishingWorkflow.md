@@ -3,7 +3,7 @@
 **Scope:** V1 only. Competitor scrape → rank/top-10 creatives → AI image+copy drafts → human verify (+ manual video) → publish as **Meta Ads drafts (PAUSED)**.
 **Out of scope (V2):** LangGraph orchestration, auto video edit, auto competitor discovery, CI-triggered publishing.
 
-> **Status: DRAFT — design only, not implemented.** Some referenced tools exist (`scripts/MetaAdsCollector.py`, `scripts/agnes-image-to-image.cjs`), but site-mode collection, `ads/config.json` scaffolding, the draft schema, and the publish script are **not built yet**. This is the spec to implement.
+> **Status: IMPLEMENTED (V1).** `scripts/ads_collect_site.py` (Stage 1 wrapper), `scripts/ads_publish_drafts.py` (Stage 4), the `-o/--out` flag on `scripts/agnes-image-to-image.cjs` (Stage 2), the `sites/furniture/ads/` scaffolding, and the `.gitignore` rules are all in place. The collector is the **fork** `https://github.com/iswarpatel123/MetaAdsCollector` (branch `fixes`) — cloned to `./MetaAdsCollector` as the pip editable source; it also fixes the double-fetch in `scripts/MetaAdsCollector.py` via a single-pass `collect_with_media()`. Remaining gaps are operational (real Meta IDs/token, competitor page IDs, product assets).
 
 ---
 
@@ -193,6 +193,8 @@ sites/*/ads/drafts/**/source/**
 **Ranking:** rely on API sort impressions + `max_results=top_n`. The wrapper maps config `"impressions"` -> collector `SORT_IMPRESSIONS`.
 
 **Note:** with `competitors: []` as the shipped default, this stage is a no-op until the operator fills in real page IDs per site — expected and fine.
+
+**Implementation detail:** `scripts/MetaAdsCollector.py` now accepts `--session-file` (site wrapper passes `session.json`) and uses `collect_with_media()` in a single pass when `--creative-dir` is set, so creatives are downloaded from the same search that wrote the JSONL instead of a second `collect()` call. The wrapper then reorganizes flat downloads into `media/<ad_id>/0.ext` and writes `media/<ad_id>/meta.json` (`{ad_id, jsonl_line, files, source_url}`) from the JSONL rows.
 
 ---
 
@@ -421,15 +423,15 @@ meta ads ad create <AD_SET_ID> --name "furniture | sofa | 220723 | v1" \
 
 | Item | Action |
 |------|--------|
-| `docs/AdPublishingWorkflow.md` | this spec |
-| `sites/<slug>/ads/config.json` | create per site (start furniture), `competitors: []` |
-| `sites/<slug>/ads/products/manifest.json` | product image map |
-| `scripts/MetaAdsCollector.py` | site output paths, top-N media, fix double collect |
-| `scripts/ads_collect_site.py` | preferred wrapper (reads site config, loops competitors, shells out to `MetaAdsCollector.py`) |
-| `scripts/agnes-image-to-image.cjs` | wire `-o/--out` to `saveBase64Image()`; script otherwise functional |
-| `scripts/ads_publish_drafts.py` | new — campaign/adset idempotent create + publish |
-| `.gitignore` | sessions, media, `out/`, `video/`, `source/` |
-| Agent prompt / skill (optional) | stage-2 brief only — no LangGraph |
+| `docs/AdPublishingWorkflow.md` | this spec — status updated to IMPLEMENTED |
+| `sites/<slug>/ads/config.json` | ✅ created for `furniture`, `competitors: []` |
+| `sites/<slug>/ads/products/manifest.json` | ✅ created empty (`{ "products": [] }`) |
+| `scripts/MetaAdsCollector.py` | ✅ `--session-file` arg; single-pass collect+media (fix double collect) |
+| `scripts/ads_collect_site.py` | ✅ wrapper (config-driven, per-page output, `latest.jsonl`, `media/<ad_id>/` + `meta.json`) |
+| `scripts/agnes-image-to-image.cjs` | ✅ `-o/--out` wired to `saveBase64Image()` |
+| `scripts/ads_publish_drafts.py` | ✅ new — idempotent campaign/adset create + PAUSED publish, `--dry-run`/`--force` |
+| `.gitignore` | ✅ sessions, media, `out/`, `video/`, `source/`, `MetaAdsCollector/` |
+| Agent prompt (optional) | ✅ `.pi/agents/ad-drafter.md` — stage-2 brief, no LangGraph |
 
 ---
 

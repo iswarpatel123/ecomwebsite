@@ -200,6 +200,16 @@ def main():
         help="Download creatives to this subdirectory (default: disabled)",
     )
     parser.add_argument(
+        "--session-file",
+        type=str,
+        default=None,
+        help=(
+            "Session cookie filename inside --output-dir "
+            "(default: {page_id}_session.json). Site-mode wrappers pass "
+            "'session.json' per the Ad Publishing Workflow layout."
+        ),
+    )
+    parser.add_argument(
         "--test",
         action="store_true",
         help="Test mode: limit to --max-results ads (default 5 if not set)",
@@ -222,7 +232,8 @@ def main():
     now = datetime.now(timezone.utc)
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     json_path = output_dir / f"{args.page_id}_{timestamp}.{DEFAULT_OUTPUT_EXT}"
-    session_path = output_dir / f"{args.page_id}_session.json"
+    session_name = args.session_file or f"{args.page_id}_session.json"
+    session_path = output_dir / session_name
 
     logger.info("=" * 70)
     logger.info("Meta Ads Collector")
@@ -259,27 +270,39 @@ def main():
             if not args.test:
                 creative_dir.mkdir(parents=True, exist_ok=True)
 
-        # Collect and save to JSONL (dedup tracker prevents duplicates within run)
-        collector.collect_to_jsonl(
-            str(json_path),
-            country=args.country,
-            ad_type=args.ad_type,
-            status=args.status,
-            search_type=DEFAULT_SEARCH_TYPE,
-            page_ids=[args.page_id],
-            sort_by=MetaAdsCollector.SORT_IMPRESSIONS,
-            max_results=args.max_results,
-            page_size=args.page_size,
-            dedup_tracker=dedup_tracker,
-        )
-
-        logger.info(f"Saved ads to: {json_path}")
-        logger.info(f"Output: {json_path}")
-
-        # Download creatives if requested (skip in test mode)
+        # Collect + download creatives in a single pass when media is requested.
+        # Previously this re-ran collect() after collect_to_jsonl() — a double
+        # fetch of the same ads that wasted tokens/rate limit. collect_with_media()
+        # yields (ad, download_results) tuples, so we write the JSONL and pull
+        # creatives from the same search.
         if creative_dir and not args.test:
-            logger.info("Downloading creatives for collected ads...")
-            ads = list(collector.collect(
+            logger.info("Collecting ads and downloading creatives (single pass)...")
+            count = 0
+            with open(json_path, "w", encoding="utf-8") as fh:
+                for ad, results in collector.collect_with_media(
+                    media_output_dir=str(creative_dir),
+                    country=args.country,
+                    ad_type=args.ad_type,
+                    status=args.status,
+                    search_type=DEFAULT_SEARCH_TYPE,
+                    page_ids=[args.page_id],
+                    sort_by=MetaAdsCollector.SORT_IMPRESSIONS,
+                    max_results=args.max_results,
+                    page_size=args.page_size,
+                    dedup_tracker=dedup_tracker,
+                ):
+                    fh.write(json.dumps(ad.to_dict(), ensure_ascii=False) + "\n")
+                    count += 1
+                    success = sum(1 for r in results if r.success)
+                    logger.debug(
+                        f"Downloaded {success}/{len(results)} creatives for ad {ad.id}"
+                    )
+            logger.info(f"Saved {count} ads to: {json_path}")
+            logger.info(f"Output: {json_path}")
+        else:
+            # Collect and save to JSONL (dedup tracker prevents duplicates within run)
+            collector.collect_to_jsonl(
+                str(json_path),
                 country=args.country,
                 ad_type=args.ad_type,
                 status=args.status,
@@ -287,17 +310,11 @@ def main():
                 page_ids=[args.page_id],
                 sort_by=MetaAdsCollector.SORT_IMPRESSIONS,
                 max_results=args.max_results,
+                page_size=args.page_size,
                 dedup_tracker=dedup_tracker,
-            ))
-            for ad in ads:
-                try:
-                    results = collector.download_ad_media(ad, str(creative_dir))
-                    success = sum(1 for r in results if r.success)
-                    logger.debug(
-                        f"Downloaded {success}/{len(results)} creatives for ad {ad.id}"
-                    )
-                except Exception as e:
-                    logger.warning(f"Failed to download creatives for ad {ad.id}: {e}")
+            )
+            logger.info(f"Saved ads to: {json_path}")
+            logger.info(f"Output: {json_path}")
 
         # Persist session for next run
         try:

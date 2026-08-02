@@ -32,7 +32,8 @@ function parseArgs() {
     prompt: '',
     size: '1024x1024',
     ratio: '1:1',
-    model: 'agnes-image-2.1-flash'
+    model: 'agnes-image-2.1-flash',
+    out: null
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -47,6 +48,10 @@ function parseArgs() {
         } else {
            config.image = input;
         }
+        break;
+      case '--out':
+      case '-o':
+        config.out = args[++i];
         break;
       case '--prompt':
       case '-p':
@@ -91,6 +96,8 @@ Options:
   -r, --ratio <ratio>       Aspect ratio (default: 1:1)
                              Options: 1:1, 3:4, 4:3, 16:9, 9:16, 2:3, 3:2, 21:9
   -m, --model <model>       Model to use (default: agnes-image-2.1-flash)
+  -o, --out <file>          Write the result image to this file instead of
+                             printing base64 to stdout (default: stdout)
 
 Environment Variables:
   AGNES_API_KEY             Your Agnes AI API key (required)
@@ -278,8 +285,15 @@ async function main() {
     const config = parseArgs();
     const base64Output = await generateImage(config);
 
-    // Output base64 image to stdout
-    console.log(base64Output);
+    if (config.out) {
+      // Write result to disk (parent dirs created if missing)
+      const outPath = path.resolve(config.out);
+      fs.mkdirSync(path.dirname(outPath), { recursive: true });
+      saveBase64Image(base64Output, outPath);
+    } else {
+      // Output base64 image to stdout
+      console.log(base64Output);
+    }
 
   } catch (error) {
     console.error(`Error: ${error.message}`);
