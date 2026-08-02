@@ -7,9 +7,7 @@ Uses meta-ads-collector library to fetch ads from the Meta Ad Library.
 
 Features:
 - Fetches all ads from a specific page
-- Persists collection state across runs using SQLite deduplication
-  (only NEW ads are added on subsequent runs - existing data is preserved)
-- Saves ad data to JSONL (appends new rows, never overwrites existing data)
+- Saves ad data to JSONL (creates timestamped files to avoid overwrites)
 - Downloads creatives (images/videos) for each ad (optional)
 - Saves session tokens to avoid re-authentication
 
@@ -20,15 +18,11 @@ Usage:
     # Run in test mode (limit results)
     python3 scripts/MetaAdsCollector.py --page-id 151402834721433 --max-results 5 --test
 
-    # Reset dedup state (re-collect all ads from scratch)
-    python3 scripts/MetaAdsCollector.py --page-id 151402834721433 --reset-dedup
-
     # Also collect other page
     python3 scripts/MetaAdsCollector.py --page-id 109718494870340
 
 Output locations (always relative to the script's directory, not CWD):
-- JSON file:      ads_output/{page_id}.jsonl
-- State file:    ads_output/{page_id}_state.db  (deduplication tracking)
+- JSON file:      ads_output/{page_id}_YYYYMMDD_HHMMSS.jsonl  (timestamped to avoid overwrites)
 - Session file:  ads_output/{page_id}_session.json  (token persistence)
 - Creatives dir: ads_output/{page_id}_creatives/  (if --creative-dir requested)
 
@@ -146,7 +140,7 @@ def main():
         "--output-dir",
         type=str,
         default=DEFAULT_OUTPUT_DIR,
-        help=f"Output directory for JSONL/state/session files (default: ads_output/ next to script)",
+        help=f"Output directory for JSONL/session files (default: ads_output/ next to script)",
     )
     parser.add_argument(
         "--country",
@@ -206,11 +200,6 @@ def main():
         help="Download creatives to this subdirectory (default: disabled)",
     )
     parser.add_argument(
-        "--reset-dedup",
-        action="store_true",
-        help="Clear deduplication state and re-collect all ads from scratch",
-    )
-    parser.add_argument(
         "--test",
         action="store_true",
         help="Test mode: limit to --max-results ads (default 5 if not set)",
@@ -229,8 +218,10 @@ def main():
     output_dir = Path(args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    json_path    = output_dir / f"{args.page_id}.{DEFAULT_OUTPUT_EXT}"
-    state_path   = output_dir / f"{args.page_id}_state.db"
+    # Generate filename with pageid_datetime format
+    now = datetime.now(timezone.utc)
+    timestamp = now.strftime("%Y%m%d_%H%M%S")
+    json_path = output_dir / f"{args.page_id}_{timestamp}.{DEFAULT_OUTPUT_EXT}"
     session_path = output_dir / f"{args.page_id}_session.json"
 
     logger.info("=" * 70)
@@ -238,35 +229,21 @@ def main():
     logger.info("=" * 70)
     logger.info(f"Page ID:          {args.page_id}")
     logger.info(f"Output JSON:      {json_path}")
-    logger.info(f"State DB:         {state_path}")
     logger.info(f"Country:          {args.country}")
     logger.info(f"Ad type:          {args.ad_type}")
     logger.info(f"Status:           {args.status}")
     logger.info(f"Max results:      {args.max_results or 'unlimited'}")
     logger.info(f"Test mode:        {args.test}")
-    logger.info(f"Reset dedup:      {args.reset_dedup}")
     logger.info("=" * 70)
 
     try:
-        # Optionally clear dedup state
-        if args.reset_dedup and state_path.exists():
-            state_path.unlink()
-            logger.info(f"Cleared dedup state: {state_path}")
-
-        # Load existing ads count for reporting (JSONL format - count lines)
-        existing_rows = 0
-        if json_path.exists():
-            with open(json_path, "r", encoding="utf-8") as f:
-                existing_rows = sum(1 for _ in f)
-            logger.info(f"Existing JSONL rows: {existing_rows}")
-
         # Load saved session (avoids full re-auth on repeat runs)
         session_data = load_session_file(session_path)
         logger.info(f"Session data loaded: {len(session_data)} keys")
 
-        # Create deduplication tracker
-        dedup_tracker = DeduplicationTracker(mode="persistent", db_path=str(state_path))
-        logger.info(f"Deduplication tracker: {state_path.name}")
+        # Create deduplication tracker (memory mode, in-process)
+        dedup_tracker = DeduplicationTracker(mode="memory")
+        logger.info("Deduplication: memory mode (in-process)")
 
         # Create collector
         collector = MetaAdsCollector(
@@ -282,9 +259,8 @@ def main():
             if not args.test:
                 creative_dir.mkdir(parents=True, exist_ok=True)
 
-        # Collect and append to JSONL
-        # collect_to_jsonl APPENDS new rows instead of overwriting
-        new_count = collector.collect_to_jsonl(
+        # Collect and save to JSONL (dedup tracker prevents duplicates within run)
+        collector.collect_to_jsonl(
             str(json_path),
             country=args.country,
             ad_type=args.ad_type,
@@ -297,27 +273,12 @@ def main():
             dedup_tracker=dedup_tracker,
         )
 
-        # Count total rows now in JSONL
-        total_rows = 0
-        if json_path.exists():
-            with open(json_path, "r", encoding="utf-8") as f:
-                total_rows = sum(1 for _ in f)
-
-        if new_count == 0:
-            logger.info(
-                f"No NEW ads found (all already collected in a previous run). "
-                f"JSONL still contains {total_rows} total ads."
-            )
-            logger.info(
-                "To re-collect everything from scratch, use: --reset-dedup"
-            )
-        else:
-            logger.info(f"Added {new_count} new ads. JSONL now has {total_rows} total ads.")
+        logger.info(f"Saved ads to: {json_path}")
         logger.info(f"Output: {json_path}")
 
         # Download creatives if requested (skip in test mode)
         if creative_dir and not args.test:
-            logger.info("Downloading creatives for newly collected ads...")
+            logger.info("Downloading creatives for collected ads...")
             ads = list(collector.collect(
                 country=args.country,
                 ad_type=args.ad_type,
@@ -325,8 +286,8 @@ def main():
                 search_type=DEFAULT_SEARCH_TYPE,
                 page_ids=[args.page_id],
                 sort_by=MetaAdsCollector.SORT_IMPRESSIONS,
-                max_results=new_count if new_count else None,
-                dedup_tracker=None,  # don't dedup here, we want the new ones
+                max_results=args.max_results,
+                dedup_tracker=dedup_tracker,
             ))
             for ad in ads:
                 try:

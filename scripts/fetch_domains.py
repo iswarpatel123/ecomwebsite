@@ -4,7 +4,7 @@ import json
 import sys
 import argparse
 
-def fetch_namelix_logos(keywords, max_length=25, extensions=None, require_domains=True):
+def fetch_namelix_logos(keywords, max_length=25, extensions=None, require_domains=True, num=3):
     url = "https://namelix.com/generate"
     
     payload = {
@@ -22,7 +22,7 @@ def fetch_namelix_logos(keywords, max_length=25, extensions=None, require_domain
         "saved": [],
         "premium_index": 0,
         "page": 0,
-        "num": 3,
+        "num": num,
         "seed": 871557358,
         "category": ""
     }
@@ -81,7 +81,14 @@ if __name__ == "__main__":
     business_names = fetch_namelix_logos(
         args.keyword, 
         max_length=args.max_length,
-        require_domains=False
+        require_domains=False,
+        num=args.num
     )
     
-    print(business_names)
+    # Print results in a more readable format
+    if business_names:
+        print("Available brand names without domains:")
+        for name in business_names:
+            print(f"  - {name}")
+    else:
+        print("No available brand names found.")
