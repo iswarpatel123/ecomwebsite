@@ -1,6 +1,6 @@
 # Meta Pixel + Conversions API Integration Design
 
-**Status:** Proposed (v1)  
+**Status:** Implemented in repository; production deployment pending
 **Scope:** 100+ static SolidStart storefronts running Meta `OUTCOME_SALES` campaigns.  
 **Related:** `docs/AdPublishingWorkflow.md`, `packages/analytics`, `packages/config-validation`.
 
@@ -249,12 +249,56 @@ Changing a live site's dataset is a measurement migration. Record the cutover ti
 
 ## 14. Implementation checklist
 
-- [ ] Extend `packages/config-validation` with the Meta schema and safe defaults.
-- [ ] Add `MetaPixelProvider` and consent/event-ID support to `packages/analytics`.
-- [ ] Add platform dataset registry and checkout CAPI route with idempotency ledger.
-- [ ] Update the site factory (`docs/site-factory-v1.md`) to generate `analytics.meta` for every new site, defaulting safely to `enabled:false`; bulk-scaffold existing sites rather than hand-editing 100+ files. Explicitly opt in shared sites.
-- [ ] Update ad publishing to validate dataset/campaign compatibility.
-- [ ] Add automated routing, consent, dedupe, replay, and SSG tests.
+- [x] Extend `packages/config-validation` with the Meta schema and safe defaults.
+- [x] Add `MetaPixelProvider` and consent/event-ID support to `packages/analytics`.
+- [x] Add D1 dataset registry and checkout CAPI route with an idempotency ledger.
+- [x] Update bootstrap/template scaffolding to generate disabled analytics config.
+- [x] Update ad publishing and clone workflow requirements.
+- [ ] Add complete automated routing, retry/replay, consent, and SSG test coverage.
 - [ ] Add dashboards and a per-site/dataset audit report.
 
+## 15. Operator actions and remaining production work
+
+The code path is present, but it cannot deliver production events until the following are completed:
+
+1. Apply `infra/d1/0003_meta_pixel.sql` to the Cloudflare D1 database.
+2. Replace `infra/checkout-api/wrangler.json` `database_id` with the real D1 database ID.
+3. Insert one `meta_dataset_registry` row per live site with the real pixel/dataset IDs and canonical origin.
+4. Configure Worker secret `META_CAPI_ACCESS_TOKEN`; keep it out of Git and static site builds.
+5. Configure Stripe webhook delivery to the deployed checkout Worker and verify checkout metadata includes the event context.
+6. Provide real Meta pixel/dataset IDs and shared approvals where applicable.
+7. Run a test purchase and confirm the browser event and CAPI event share the same `event_id`.
+
+Pending engineering work includes bounded retry scheduling/dead-letter replay tooling, dashboard metrics, complete line-item CAPI payloads, and automated production routing tests. Privacy/consent enforcement is intentionally excluded from this implementation per request.
+
 **Final recommendation:** start with per-site datasets for all independently branded storefronts. Revisit shared datasets only for a clearly unified business where pooled learning is the intended optimization target—not as a default convenience for managing 100+ sites.
+
+# Implemented the full repository path
+
+  Completed:
+  • Browser Pixel provider and checkout attribution/event IDs.
+  • Bootstrap analytics config generation.
+  • D1 dataset registry and Meta event ledger migration.
+  • Checkout Worker registry validation and CAPI Purchase.
+  • Server-side email hashing and duplicate prevention.
+  • Ad publishing validation updates.
+  • Clone workflow requirements.
+  • Pixel design status, pending work, and operator actions.
+
+  Verification:
+  • Config validation typecheck passed.
+  • Analytics typecheck passed.
+  • Checkout API tests passed: 7/7.
+  • Furniture and sauna builds passed.
+  • git diff --check passed.
+
+  Your remaining actions:
+  1. Apply infra/d1/0003_meta_pixel.sql.
+  2. Set the real D1 database_id in infra/checkout-api/wrangler.json.
+  3. Populate meta_dataset_registry with real site/pixel/dataset mappings.
+  4. Configure META_CAPI_ACCESS_TOKEN as a Worker secret.
+  5. Configure and test the Stripe webhook.
+  6. Provide real Meta IDs before enabling campaigns.
+
+  Known pending engineering items are documented: retry scheduling/replay tooling, dashboards, full line-item CAPI payloads, and
+  expanded automated routing tests.

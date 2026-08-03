@@ -61,3 +61,9 @@ CREATE INDEX IF NOT EXISTS idx_sites_tenant ON sites(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_sites_domain ON sites(domain);
 CREATE INDEX IF NOT EXISTS idx_products_site ON products(site_id);
 CREATE INDEX IF NOT EXISTS idx_orders_site ON orders(site_id);
+
+ALTER TABLE orders ADD COLUMN checkout_event_id TEXT;
+ALTER TABLE orders ADD COLUMN fbp TEXT;
+ALTER TABLE orders ADD COLUMN fbc TEXT;
+ALTER TABLE orders ADD COLUMN event_source_url TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_checkout_event ON orders(site_id, checkout_event_id);

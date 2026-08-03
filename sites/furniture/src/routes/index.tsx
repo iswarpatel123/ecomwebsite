@@ -3,7 +3,7 @@ import { For, createSignal, onMount } from "solid-js";
 import { Button, PriceFormatter } from "@dropshipping/ui-primitives";
 import { calculateCart, Product, CartItem } from "@dropshipping/core-commerce";
 import { validateSiteConfig, SiteConfig } from "@dropshipping/config-validation";
-import { AnalyticsManager, GoogleAnalyticsProvider } from "@dropshipping/analytics";
+import { AnalyticsManager, GoogleAnalyticsProvider, MetaPixelProvider } from "@dropshipping/analytics";
 import { StripePaymentProcessor } from "@dropshipping/stripe-client";
 
 // Mock Tenant Config retrieved from Cloudflare KV/D1
@@ -22,6 +22,15 @@ const mockTenantConfig: SiteConfig = validateSiteConfig({
     stripePublishableKey: "pk_test_furniture_key_123",
     googleAnalyticsId: "UA-FURN-MOCK",
   },
+  analytics: {
+    meta: {
+      enabled: false,
+      dataset_mode: "per_site",
+      send_browser_events: true,
+      send_server_events: false,
+      consent_required: true,
+    },
+  },
   features: {
     enableReviews: true,
     enableInstalls: true,
@@ -38,6 +47,9 @@ const FURNITURE_PRODUCTS: Product[] = [
 export default function Home() {
   const [cartItems, setCartItems] = createSignal<CartItem[]>([]);
   const analytics = new AnalyticsManager();
+  if (typeof window !== "undefined") {
+    analytics.registerProvider(new MetaPixelProvider(mockTenantConfig.analytics.meta, true));
+  }
 
   onMount(() => {
     analytics.registerProvider(new GoogleAnalyticsProvider(mockTenantConfig.integrations.googleAnalyticsId || ""));

@@ -55,6 +55,19 @@ sed -i "s/3000/${PORT}/g" "$SITE_PATH/playwright.config.ts"
 echo "✓ Updated package.json (port: ${PORT})"
 sed -i "s/3100/${PORT_PREVIEW}/g" "$SITE_PATH/playwright.config.ts"
 
+cat > "$SITE_PATH/src/analytics-config.ts" <<'EOF'
+export const analyticsConfig = {
+  meta: {
+    enabled: false,
+    dataset_mode: "per_site" as const,
+    send_browser_events: true,
+    send_server_events: false,
+    consent_required: false,
+  },
+};
+EOF
+echo "✓ Added disabled Meta Pixel configuration"
+
 # Step 4: Install dependencies
 echo "Step 4: Installing dependencies..."
 cd "$SITE_PATH"

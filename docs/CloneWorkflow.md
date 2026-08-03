@@ -213,6 +213,17 @@ pnpm --filter @dropshipping/site-<slug> run build
 - Forcing **section-worker** when the work is multi-package / pattern library (**builder** or **general** instead)
 - Skipping **general** / **general-vision** when specialists’ scopes block the real task
 
+## Required analytics and checkout integration
+
+Every newly bootstrapped site must complete this checklist before launch:
+
+1. Copy the generated `src/analytics-config.ts` and configure its public `pixel_id` and authoritative `dataset_id`.
+2. Register the site in D1 `meta_dataset_registry`; never put CAPI tokens in the site.
+3. Use `MetaPixelProvider` for `PageView`, product, cart, checkout, and purchase events.
+4. Generate one checkout event ID before payment and send it with `siteId`, `fbp`, `fbc`, and `eventSourceUrl` to the shared checkout Worker.
+5. Verify the checkout Worker stores the event context and the Stripe webhook can emit one CAPI `Purchase`.
+6. Confirm the site build contains only public Meta IDs and no server secrets.
+
 ---
 
 ## Human fallback

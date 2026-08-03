@@ -3,7 +3,7 @@ import { For, createSignal, onMount } from "solid-js";
 import { Button, PriceFormatter } from "@dropshipping/ui-primitives";
 import { calculateCart, Product, CartItem } from "@dropshipping/core-commerce";
 import { validateSiteConfig, SiteConfig } from "@dropshipping/config-validation";
-import { AnalyticsManager, CustomTrackingProvider } from "@dropshipping/analytics";
+import { AnalyticsManager, CustomTrackingProvider, MetaPixelProvider } from "@dropshipping/analytics";
 import { BraintreePaymentProcessor } from "@dropshipping/stripe-client";
 
 // High-ticket sauna tenant config
@@ -21,6 +21,15 @@ const mockTenantConfig: SiteConfig = validateSiteConfig({
   integrations: {
     stripePublishableKey: "pk_test_saunas_braintree_fallback",
     braintreeTokenizationKey: "bt_tok_nordic_saunas_99",
+  },
+  analytics: {
+    meta: {
+      enabled: false,
+      dataset_mode: "per_site",
+      send_browser_events: true,
+      send_server_events: false,
+      consent_required: true,
+    },
   },
   features: {
     enableReviews: true,
@@ -40,6 +49,9 @@ export default function Home() {
   const [selectedWood, setSelectedWood] = createSignal<"cedar" | "hemlock">("cedar");
   const [installService, setInstallService] = createSignal<boolean>(false);
   const analytics = new AnalyticsManager();
+  if (typeof window !== "undefined") {
+    analytics.registerProvider(new MetaPixelProvider(mockTenantConfig.analytics.meta, true));
+  }
 
   onMount(() => {
     analytics.registerProvider(new CustomTrackingProvider("/api/logs", mockTenantConfig.tenantId));

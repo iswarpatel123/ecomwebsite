@@ -60,6 +60,7 @@ Do **not** auto-activate ads in V1. Do **not** wire publish into CI in V1.
 
 - **Objective: `OUTCOME_SALES` from the first campaign create.** No traffic-objective phase — since the Meta Pixel (+ Conversions API) is being implemented before any spend, there's no reason to start on Traffic and switch later (switching objective on a live campaign disrupts the learning phase).
 - **Pixel / Conversions API is a prerequisite, not a parallel-track nice-to-have.** Publish script must refuse to create a Sales-objective campaign if `pixel_id` is null in config — fail fast rather than create a campaign that can't optimize.
+- Before publishing, verify the site is present in D1 `meta_dataset_registry`, its configured `pixel_id`/`dataset_id` match the registry, and any shared dataset has an approved `shared_dataset_key`. The registry is authoritative; ad config must not override it.
 - Conversions API (server-side) should hook into the existing shared Cloudflare Function checkout backend, not per-site — same place Stripe logic already lives — so event submission is centralized and consistent across all 100+ storefronts.
 - **Geography: US only** for the default ad set.
 - **Budget: placeholder daily budget** (e.g. $1 / 100 cents) on first create, to be manually raised per site once ready to actually spend. Publish script should treat this as a named constant, not hardcoded inline, so it's easy to find and raise later. **Note:** Use 100 cents as-is for V1. Ads are created PAUSED so no real spend occurs; this exists only to satisfy the API budget field.

@@ -199,6 +199,8 @@ def resolve_adset(site: str, config: dict, campaign_id: str, dry_run: bool, env:
     """Return (and if needed create) the default ad set id. Writes config back."""
     meta = config["meta"]
     pixel_id = meta.get("pixel_id")
+    if meta.get("dataset_mode", "per_site") == "shared" and not meta.get("shared_dataset_key"):
+        raise PublishError("shared dataset mode requires shared_dataset_key", EXIT_API)
     if not pixel_id:
         raise PublishError(
             "meta.pixel_id is null but objective is OUTCOME_SALES — cannot create a "

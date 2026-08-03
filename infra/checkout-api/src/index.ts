@@ -4,6 +4,8 @@ export interface Env {
   DB?: D1Database;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
+  META_CAPI_ACCESS_TOKEN?: string;
+  META_GRAPH_API_VERSION?: string;
 }
 
 const fallbackTenantMap: Record<string, string> = {
@@ -54,15 +56,29 @@ export default {
           cancelUrl: string;
           shippingRate?: number;
           taxRate?: number;
+          checkoutEventId?: string;
+          fbp?: string;
+          fbc?: string;
+          eventSourceUrl?: string;
         };
 
-        const { siteId, lineItems, successUrl, cancelUrl, shippingRate = 0, taxRate = 0.08 } = body;
+        const { siteId, lineItems, successUrl, cancelUrl, shippingRate = 0, taxRate = 0.08, checkoutEventId, fbp, fbc, eventSourceUrl } = body;
 
         if (!siteId || !lineItems || !Array.isArray(lineItems) || !successUrl || !cancelUrl) {
           return new Response(JSON.stringify({ error: "Missing required parameters" }), {
             status: 400,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
+        }
+        if (env.DB) {
+          const registry = await env.DB.prepare(
+            "SELECT site_id FROM meta_dataset_registry WHERE site_id = ? AND active = 1"
+          ).bind(siteId).first();
+          if (!registry) {
+            return new Response(JSON.stringify({ error: "Unknown or inactive site" }), {
+              status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
         }
 
         // Get tenant ID from D1 or fallback
@@ -101,6 +117,11 @@ export default {
               cart.shipping,
               cart.total
             ).run();
+            if (checkoutEventId) {
+              await env.DB.prepare(
+                "UPDATE orders SET checkout_event_id = ?, fbp = ?, fbc = ?, event_source_url = ? WHERE id = ?"
+              ).bind(checkoutEventId, fbp || null, fbc || null, eventSourceUrl || null, orderId).run();
+            }
           } catch (e) {
             console.error("D1 order pre-insert error:", e);
           }
@@ -213,6 +234,7 @@ export default {
           const siteId = session.metadata?.siteId || "unknown";
           const tenantId = session.metadata?.tenantId || fallbackTenantMap[siteId] || "unknown";
           const stripeChargeId = session.payment_intent || session.id;
+          const checkoutEventId = session.metadata?.checkoutEventId || orderId || stripeChargeId;
 
           const subtotal = (session.amount_subtotal ?? 0) / 100;
           const tax = (session.total_details?.amount_tax ?? 0) / 100;
@@ -296,6 +318,17 @@ export default {
               shippingAddress,
             });
           }
+          if (env.DB && env.META_CAPI_ACCESS_TOKEN && orderId) {
+            await sendPurchase(env, siteId, checkoutEventId, {
+              orderId,
+              value: total,
+              currency: session.currency || "usd",
+              email: customerEmail,
+              fbp: session.metadata?.fbp,
+              fbc: session.metadata?.fbc,
+              eventSourceUrl: session.metadata?.eventSourceUrl,
+            });
+          }
         }
 
         return new Response(JSON.stringify({ received: true }), {
@@ -357,4 +390,50 @@ async function verifyStripeSignature(
     console.error("Signature verification error:", e);
     return false;
   }
+}
+
+async function sendPurchase(env: Env, siteId: string, eventId: string, data: {
+  orderId: string; value: number; currency: string; email?: string; fbp?: string; fbc?: string; eventSourceUrl?: string;
+}) {
+  const registry = await env.DB!.prepare(
+    "SELECT dataset_id FROM meta_dataset_registry WHERE site_id = ? AND active = 1"
+  ).bind(siteId).first<{ dataset_id: string }>();
+  if (!registry) return;
+  const existing = await env.DB!.prepare(
+    "SELECT status FROM meta_event_ledger WHERE site_id = ? AND event_id = ? AND event_name = 'Purchase'"
+  ).bind(siteId, eventId).first<{ status: string }>();
+  if (existing?.status === "sent" || existing?.status === "pending") return;
+  await env.DB!.prepare(
+    `INSERT INTO meta_event_ledger (site_id, event_id, event_name, dataset_id, status, attempts)
+     VALUES (?, ?, 'Purchase', ?, 'pending', 1)
+     ON CONFLICT(site_id, event_id, event_name) DO UPDATE SET attempts = attempts + 1, status = 'pending'`
+  ).bind(siteId, eventId, registry.dataset_id).run();
+  const userData: Record<string, string> = {};
+  if (data.email) userData.em = await sha256(data.email.trim().toLowerCase());
+  const response = await fetch(
+    `https://graph.facebook.com/${env.META_GRAPH_API_VERSION || "v20.0"}/${registry.dataset_id}/events?access_token=${encodeURIComponent(env.META_CAPI_ACCESS_TOKEN!)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        data: [{
+          event_name: "Purchase",
+          event_time: Math.floor(Date.now() / 1000),
+          event_id: eventId,
+          action_source: "website",
+          event_source_url: data.eventSourceUrl,
+          user_data: { ...userData, fbp: data.fbp, fbc: data.fbc },
+          custom_data: { order_id: data.orderId, value: data.value, currency: data.currency.toUpperCase() },
+        }],
+      }),
+    },
+  );
+  await env.DB!.prepare(
+    "UPDATE meta_event_ledger SET status = ?, last_error = ?, updated_at = CURRENT_TIMESTAMP WHERE site_id = ? AND event_id = ? AND event_name = 'Purchase'"
+  ).bind(response.ok ? "sent" : "dead_letter", response.ok ? null : (await response.text()).slice(0, 1000), siteId, eventId).run();
+}
+
+async function sha256(value: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, "0")).join("");
 }
