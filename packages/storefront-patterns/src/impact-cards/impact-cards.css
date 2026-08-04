@@ -1,0 +1,73 @@
+.ic {
+  --ic-bg: #555e4e;
+  --ic-radius: 32px;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border-radius: var(--ic-radius);
+  background: var(--ic-bg);
+  color: #fff;
+  font-family: inherit;
+}
+
+.ic__title {
+  margin: 0 0 1.5rem;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.ic__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ic__card {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  border-radius: 22px;
+  background: #2f342c;
+}
+
+.ic__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ic__overlay {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 1.25rem 1.1rem 1.35rem;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.72) 55%, rgba(0, 0, 0, 0.88) 100%);
+}
+
+.ic__watermark {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  opacity: 0.55;
+}
+
+.ic__body {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .ic__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ic__card {
+    aspect-ratio: 16 / 10;
+  }
+}

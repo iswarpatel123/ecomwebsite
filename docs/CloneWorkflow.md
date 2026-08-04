@@ -229,3 +229,21 @@ Every newly bootstrapped site must complete this checklist before launch:
 ## Human fallback
 
 If automation cannot clear a popup or captcha, ask for a human screenshot. Continue from that file path; do not block the whole job on perfect automation.
+
+## Recommendation for future sites
+
+  Default: screenshots + short notes + local media only if needed. That matches docs/CloneWorkflow.md (“screenshot-first (default)”,
+  goals ≠ pixel-perfect).
+
+  Run the heavier clone/extract path when:
+  • You need real product photos/video offline (this furniture job already had that — the valuable part of “clone”)
+  • UI has multi-state interactions hard to infer from one scroll (tabs, open accordion, carousel frames)
+  • Parallel section-workers need contracts so they don’t collide
+
+  Skip full clone when:
+  • You want deliberate difference (your case)
+  • Reference is layout/hierarchy only
+  • Media already exists under sites/<slug>/public
+
+  Efficient quality bar: 1 desktop + 1 mobile screenshot (maybe tablet), a 5–10 line section list (“visualizer → benefits → reviews →
+  FAQ → impact → footer”), and optionally a media download pass — not contracts + DOM dump.

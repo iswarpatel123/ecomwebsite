@@ -1,0 +1,140 @@
+.sf {
+  --sf-bg: #555e4e;
+  --sf-ink: #f5f6f3;
+  --sf-muted: rgba(245, 246, 243, 0.78);
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(1.25rem, 4vw, 3rem) 1.5rem;
+  border-radius: 32px 32px 0 0;
+  background: var(--sf-bg);
+  color: var(--sf-ink);
+  font-family: inherit;
+}
+
+.sf a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sf a:hover {
+  text-decoration: underline;
+}
+
+.sf__top {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.9fr) minmax(0, 1.4fr);
+  gap: 2rem 3rem;
+  margin-bottom: 2.5rem;
+}
+
+.sf__logo {
+  margin: 0 0 1rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.sf__ack {
+  margin: 0;
+  max-width: 28rem;
+  color: var(--sf-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.sf__social {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sf__social a {
+  display: grid;
+  place-items: center;
+  min-width: 2rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sf__columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.sf__col-title {
+  margin: 0 0 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.sf__column ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sf__column li {
+  margin-bottom: 0.55rem;
+}
+
+.sf__column a {
+  color: var(--sf-muted);
+  font-size: 0.92rem;
+}
+
+.sf__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(245, 246, 243, 0.25);
+}
+
+.sf__legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  align-items: center;
+  color: var(--sf-muted);
+  font-size: 0.8rem;
+}
+
+.sf__payments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sf__payments li {
+  padding: 0.25rem 0.45rem;
+  border: 1px solid rgba(245, 246, 243, 0.35);
+  border-radius: 0.35rem;
+  color: var(--sf-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  .sf__top {
+    grid-template-columns: 1fr;
+  }
+
+  .sf__columns {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .sf__columns {
+    grid-template-columns: 1fr;
+  }
+}

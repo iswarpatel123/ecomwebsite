@@ -1,17 +1,28 @@
 # Storefront Patterns
 
 Reusable commerce patterns for sites:
-- PDP product gallery
-- Product purchase panel
-- Product details accordion/menu
-- Reviews summary/list
-- FAQ block
-- Media-and-text storytelling sections
-- Product cards, recommendation rows, etc.
+- PDP product gallery (site-local) + purchase panel (`ProductDescription`)
+- Product details accordion (via `ProductDescription`)
+- Tabbed media visualizer (`TabbedMedia`)
+- Media-and-text storytelling (`MediaText`)
+- Reviews summary/list (`Reviews`)
+- FAQ block (`Faq`)
+- Impact / sustainability cards (`ImpactCards`)
+- Newsletter CTA (`NewsletterCta`)
+- Site footer (`SiteFooter`)
 
 Import patterns directly:
 ```tsx
-import { ProductDescription } from '@repo/storefront-patterns';
+import {
+  ProductDescription,
+  TabbedMedia,
+  MediaText,
+  Reviews,
+  Faq,
+  ImpactCards,
+  NewsletterCta,
+  SiteFooter,
+} from '@repo/storefront-patterns';
 ```
 
 When to use / avoid patterns documented in each component’s README.

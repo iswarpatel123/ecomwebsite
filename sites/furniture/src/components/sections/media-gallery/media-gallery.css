@@ -1,0 +1,29 @@
+/* Grid is scoped under the hero left column; width = parent column */
+.media-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.media-tile {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: #e3e5df;
+}
+
+.media-tile__media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Mobile uses thumbnails instead of the multi-row grid */
+@media (max-width: 1100px) {
+  .media-gallery__grid {
+    display: none;
+  }
+}
