@@ -1,0 +1,11 @@
+.collection-section {
+  width: min(1340px, calc(100% - 48px));
+  margin: 1.75rem auto 3rem;
+}
+
+@media (max-width: 760px) {
+  .collection-section {
+    width: calc(100% - 32px);
+    margin-top: 1.25rem;
+  }
+}

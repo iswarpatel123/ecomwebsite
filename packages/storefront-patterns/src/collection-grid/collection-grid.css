@@ -1,0 +1,67 @@
+.cg {
+  --cg-ink: #121212;
+  --cg-radius: 12px;
+  color: var(--cg-ink);
+  font-family: inherit;
+}
+
+.cg__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.cg__title {
+  margin: 0;
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.cg__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  align-items: stretch;
+}
+
+.cg__cell {
+  min-width: 0;
+  display: flex;
+}
+
+.cg__cell > * {
+  width: 100%;
+}
+
+/* Keep merch tiles visually even with product cards in the same row */
+.cg__cell[data-type="promo"],
+.cg__cell[data-type="quote"],
+.cg__cell[data-type="trust"] {
+  min-height: 22rem;
+}
+
+@media (max-width: 980px) {
+  .cg__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .cg__grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .cg__cell[data-type="promo"],
+  .cg__cell[data-type="quote"],
+  .cg__cell[data-type="trust"] {
+    min-height: 18rem;
+  }
+}

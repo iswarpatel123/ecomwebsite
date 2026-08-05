@@ -1,0 +1,145 @@
+.pc {
+  --pc-ink: #121212;
+  --pc-muted: #5c5c56;
+  --pc-save: #b42318;
+  --pc-media-bg: #eceee8;
+  --pc-radius: 12px;
+  color: var(--pc-ink);
+  font-family: inherit;
+  height: 100%;
+}
+
+.pc__link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.pc__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--pc-radius);
+  background: var(--pc-media-bg);
+}
+
+.pc__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pc__dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.65rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.pc__dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+}
+
+.pc__dot.is-active {
+  background: #121212;
+}
+
+.pc__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0.85rem 0.15rem 0.25rem;
+}
+
+.pc__rating {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+}
+
+.pc__stars {
+  letter-spacing: 0.06em;
+  color: #171814;
+}
+
+.pc__count {
+  color: var(--pc-muted);
+}
+
+.pc__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.pc__subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--pc-muted);
+  font-size: 0.875rem;
+}
+
+.pc__price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.55rem;
+  margin-top: 0.55rem;
+}
+
+.pc__save {
+  width: 100%;
+  color: var(--pc-save);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.pc__compare {
+  color: var(--pc-muted);
+  font-size: 0.9rem;
+  text-decoration: line-through;
+}
+
+.pc__price {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.pc__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pc__swatch {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  object-fit: cover;
+}
+
+.pc__swatch--img {
+  background: #ddd;
+}

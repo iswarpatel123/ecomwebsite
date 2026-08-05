@@ -96,6 +96,8 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/ui: {}
+
   packages/ui-primitives:
     dependencies:
       solid-js:
@@ -123,6 +125,9 @@ importers:
       '@dropshipping/ui-primitives':
         specifier: workspace:*
         version: link:../../packages/ui-primitives
+      '@repo/storefront-patterns':
+        specifier: workspace:*
+        version: link:../../packages/storefront-patterns
       '@solidjs/meta':
         specifier: ^0.29.4
         version: 0.29.4(solid-js@1.9.14)
@@ -142,11 +147,26 @@ importers:
         specifier: ^7.0.0
         version: 7.3.1(@types/node@26.1.1)(jiti@2.6.1)(terser@5.46.0)(tsx@4.23.0)
     devDependencies:
+      '@playwright/test':
+        specifier: ^1.50.0
+        version: 1.61.1
+      '@types/node':
+        specifier: ^26.1.1
+        version: 26.1.1
+      '@types/pngjs':
+        specifier: ^6.0.5
+        version: 6.0.5
+      pixelmatch:
+        specifier: ^6.0.0
+        version: 6.0.0
+      pngjs:
+        specifier: ^7.0.0
+        version: 7.0.0
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
 
-  sites/saunas:
+  sites/katachi:
     dependencies:
       '@dropshipping/analytics':
         specifier: workspace:*
@@ -182,6 +202,21 @@ importers:
         specifier: ^7.0.0
         version: 7.3.1(@types/node@26.1.1)(jiti@2.6.1)(terser@5.46.0)(tsx@4.23.0)
     devDependencies:
+      '@playwright/test':
+        specifier: ^1.50.0
+        version: 1.61.1
+      '@types/node':
+        specifier: ^26.1.1
+        version: 26.1.1
+      '@types/pngjs':
+        specifier: ^6.0.5
+        version: 6.0.5
+      pixelmatch:
+        specifier: ^6.0.0
+        version: 6.0.0
+      pngjs:
+        specifier: ^7.0.0
+        version: 7.0.0
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
@@ -5033,10 +5068,6 @@ snapshots:
     dependencies:
       reusify: 1.1.0
 
-  fdir@6.5.0(picomatch@4.0.3):
-    optionalDependencies:
-      picomatch: 4.0.3
-
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
       picomatch: 4.0.5
@@ -6017,8 +6048,8 @@ snapshots:
 
   tinyglobby@0.2.15:
     dependencies:
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
+      fdir: 6.5.0(picomatch@4.0.5)
+      picomatch: 4.0.5
 
   tinyglobby@0.2.17:
     dependencies:

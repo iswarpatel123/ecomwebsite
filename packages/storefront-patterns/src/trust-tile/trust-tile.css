@@ -1,0 +1,90 @@
+.tt {
+  --tt-bg: #ebe6db;
+  --tt-ink: #121212;
+  --tt-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  height: 100%;
+  min-height: 100%;
+  padding: 2rem 1.5rem;
+  border-radius: var(--tt-radius);
+  background: var(--tt-bg);
+  color: var(--tt-ink);
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.tt__list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tt__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  width: 100%;
+  max-width: 16rem;
+  text-align: center;
+}
+
+.tt__icon-wrap {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.tt__icon {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
+.tt__label {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.tt__desc {
+  color: #5c5c56;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.tt__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.55rem 1.25rem;
+  border: 1px solid #121212;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tt__cta:hover {
+  background: rgba(18, 18, 18, 0.06);
+}
