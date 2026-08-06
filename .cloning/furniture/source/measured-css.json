@@ -1,0 +1,154 @@
+{
+  "page": {
+    "backgroundColor": "rgb(245, 246, 243)"
+  },
+  "section": {
+    "backgroundColor": "rgb(245, 246, 243)"
+  },
+  "collectionGrid": {
+    "display": "grid",
+    "gap": "24px",
+    "gridTemplateColumns": "324.656px 324.672px 324.656px",
+    "padding": "0px",
+    "margin": "0px 0px 20px",
+    "border": "0px none rgb(18, 18, 18)",
+    "backgroundColor": "rgba(0, 0, 0, 0)"
+  },
+  "productCell": {
+    "border": "0px solid rgb(223, 222, 213)",
+    "borderColor": "rgb(223, 222, 213)",
+    "borderWidth": "0px",
+    "padding": "0px",
+    "backgroundColor": "rgb(255, 255, 255)",
+    "borderRadius": "16px",
+    "boxShadow": "none",
+    "margin": "0px"
+  },
+  "productImage": {
+    "borderRadius": "16px 16px 0px 0px",
+    "aspectRatio": "auto 1920 / 1440",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "width": "324.656px",
+    "height": "244.094px"
+  },
+  "productTitle": {
+    "fontSize": "16px",
+    "fontWeight": "500",
+    "color": "rgb(38, 38, 38)",
+    "lineHeight": "24px"
+  },
+  "borderModel": {
+    "type": "gap-separated-cards",
+    "gridGap": "24px",
+    "cellBorderWidth": "0px",
+    "cardBackground": "rgb(255, 255, 255)",
+    "cardBorderRadius": "16px",
+    "description": "24px grid gap exposes page bg between white rounded cards; no collapsed border grid."
+  },
+  "navDropdown": {
+    "panel": {
+      "backgroundColor": "rgb(245, 246, 243)",
+      "padding": "0px",
+      "border": "0px none rgb(18, 18, 18)",
+      "borderTop": "0px none rgb(18, 18, 18)",
+      "borderBottom": "0px none rgb(18, 18, 18)",
+      "boxShadow": "none",
+      "width": "1440px",
+      "height": "505.422px",
+      "position": "absolute",
+      "rect": {
+        "width": 1440,
+        "height": 505.421875,
+        "top": 106,
+        "left": 0
+      }
+    },
+    "inner": {
+      "padding": "32px 50px",
+      "backgroundColor": "rgba(0, 0, 0, 0)"
+    },
+    "megaMenu": {
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "position": "relative"
+    },
+    "headerRow": {
+      "padding": "0px 0px 24px",
+      "display": "flex"
+    },
+    "title": {
+      "fontSize": "32px",
+      "fontWeight": "600",
+      "color": "rgb(18, 18, 18)",
+      "lineHeight": "38.4px"
+    },
+    "shopAll": {
+      "backgroundColor": "rgb(105, 108, 88)",
+      "color": "rgb(255, 255, 255)",
+      "borderRadius": "100.1px",
+      "padding": "16px 32px",
+      "fontSize": "16px",
+      "fontWeight": "500",
+      "border": "0px none rgb(255, 255, 255)"
+    },
+    "tileGrid": {
+      "display": "grid",
+      "gap": "32px 20px",
+      "gridTemplateColumns": "174.281px 174.281px 174.281px 174.297px 174.281px 174.281px 174.297px",
+      "padding": "0px"
+    },
+    "tile": {
+      "border": "0px none rgb(18, 18, 18)",
+      "borderRadius": "0px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "padding": "0px",
+      "width": "174.281px",
+      "height": "164.719px"
+    },
+    "tileLink": {
+      "borderRadius": "0px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "overflow": "visible"
+    },
+    "tileImage": {
+      "borderRadius": "0px",
+      "aspectRatio": "auto 1920 / 1440",
+      "width": "172.281px",
+      "height": "130.703px",
+      "objectFit": "cover"
+    },
+    "tileLabel": {
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "color": "rgb(82, 82, 82)"
+    },
+    "lifestyleTile": {
+      "border": "0px none rgb(18, 18, 18)",
+      "borderRadius": "0px",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "width": "174.281px",
+      "height": "164.703px",
+      "rect": {
+        "width": 174.28125,
+        "height": 164.703125
+      }
+    },
+    "lifestyleImage": {
+      "borderRadius": "0px",
+      "aspectRatio": "auto 1920 / 1440",
+      "width": "172.281px",
+      "height": "130.703px"
+    },
+    "lifestyleLabel": {
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "color": "rgb(82, 82, 82)"
+    }
+  },
+  "notes": [
+    "Collection uses gap-separated white cards (24px gap), not shared grid border lines.",
+    "Grid li/cell has 0px border; visual card is inner .card with white bg + 16px radius.",
+    "Product image top corners rounded 16px; aspect ratio ~4:3 (1920/1440).",
+    "Page background: rgb(245, 246, 243) (#F5F6F3).",
+    "Page and dropdown panel share the same bg: rgb(245, 246, 243) (not a white floating card)."
+  ]
+}

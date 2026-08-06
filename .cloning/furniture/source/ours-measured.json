@@ -1,0 +1,15 @@
+{
+  "bodyBg": "rgb(245, 246, 243)",
+  "panelBg": "rgb(245, 246, 243)",
+  "panelShadow": "none",
+  "thumbBorder": "1px solid rgb(223, 222, 213)",
+  "thumbRadius": "8px",
+  "thumbAspect": "1920 / 1440",
+  "titleSize": "32px",
+  "shopBg": "rgb(105, 108, 88)",
+  "shopPad": "16px 32px",
+  "pcBorder": "1px solid rgb(223, 222, 213)",
+  "pcRadius": "16px",
+  "pcBg": "rgb(255, 255, 255)",
+  "gridGap": "24px"
+}

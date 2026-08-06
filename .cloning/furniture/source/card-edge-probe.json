@@ -1,0 +1,559 @@
+{
+  "nodes": [
+    {
+      "label": "li",
+      "className": "product-list-item grid__item scroll-trigger animate--slide-in ",
+      "tag": "li",
+      "rect": {
+        "w": 324.65625,
+        "h": 413.90625
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(18, 18, 18)",
+      "borderTop": "0px none rgb(18, 18, 18)",
+      "borderBottom": "0px none rgb(18, 18, 18)",
+      "borderLeft": "0px none rgb(18, 18, 18)",
+      "borderRight": "0px none rgb(18, 18, 18)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(18, 18, 18) none 3px",
+      "filter": "none",
+      "overflow": "visible",
+      "padding": "0px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(18, 18, 18)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(18, 18, 18)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card",
+      "className": "\n        card card--standard\n         card--media\n        \n        \n        \n        \n        \n      ",
+      "tag": "div",
+      "rect": {
+        "w": 324.65625,
+        "h": 413.90625
+      },
+      "backgroundColor": "rgb(255, 255, 255)",
+      "border": "0px solid rgb(223, 222, 213)",
+      "borderTop": "0px solid rgb(223, 222, 213)",
+      "borderBottom": "0px solid rgb(223, 222, 213)",
+      "borderLeft": "0px solid rgb(223, 222, 213)",
+      "borderRight": "0px solid rgb(223, 222, 213)",
+      "borderRadius": "16px",
+      "boxShadow": "none",
+      "outline": "rgb(18, 18, 18) none 3px",
+      "filter": "none",
+      "overflow": "hidden",
+      "padding": "0px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(18, 18, 18)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(18, 18, 18)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card>child0",
+      "className": "card__inner color-scheme-2 gradient ratio",
+      "tag": "div",
+      "rect": {
+        "w": 324.65625,
+        "h": 244.09375
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(28, 28, 28)",
+      "borderTop": "0px none rgb(28, 28, 28)",
+      "borderBottom": "0px none rgb(28, 28, 28)",
+      "borderLeft": "0px none rgb(28, 28, 28)",
+      "borderRight": "0px none rgb(28, 28, 28)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(28, 28, 28) none 3px",
+      "filter": "none",
+      "overflow": "visible",
+      "padding": "0px",
+      "margin": "0px",
+      "before": {
+        "content": "\"\"",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "0px",
+        "height": "244.094px",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "\"\"",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card>child1",
+      "className": "card__content",
+      "tag": "div",
+      "rect": {
+        "w": 324.65625,
+        "h": 169.8125
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(18, 18, 18)",
+      "borderTop": "0px none rgb(18, 18, 18)",
+      "borderBottom": "0px none rgb(18, 18, 18)",
+      "borderLeft": "0px none rgb(18, 18, 18)",
+      "borderRight": "0px none rgb(18, 18, 18)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(18, 18, 18) none 3px",
+      "filter": "none",
+      "overflow": "visible",
+      "padding": "16px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(18, 18, 18)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(18, 18, 18)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card__inner",
+      "className": "card__inner color-scheme-2 gradient ratio",
+      "tag": "div",
+      "rect": {
+        "w": 324.65625,
+        "h": 244.09375
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(28, 28, 28)",
+      "borderTop": "0px none rgb(28, 28, 28)",
+      "borderBottom": "0px none rgb(28, 28, 28)",
+      "borderLeft": "0px none rgb(28, 28, 28)",
+      "borderRight": "0px none rgb(28, 28, 28)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(28, 28, 28) none 3px",
+      "filter": "none",
+      "overflow": "visible",
+      "padding": "0px",
+      "margin": "0px",
+      "before": {
+        "content": "\"\"",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "0px",
+        "height": "244.094px",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "\"\"",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card__media",
+      "className": "card__media  has-secondary-media",
+      "tag": "div",
+      "rect": {
+        "w": 324.65625,
+        "h": 244.09375
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(28, 28, 28)",
+      "borderTop": "0px none rgb(28, 28, 28)",
+      "borderBottom": "0px none rgb(28, 28, 28)",
+      "borderLeft": "0px none rgb(28, 28, 28)",
+      "borderRight": "0px none rgb(28, 28, 28)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(28, 28, 28) none 3px",
+      "filter": "none",
+      "overflow": "hidden",
+      "padding": "0px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "media",
+      "className": "media media--transparent",
+      "tag": "div",
+      "rect": {
+        "w": 324.65625,
+        "h": 244.09375
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(28, 28, 28)",
+      "borderTop": "0px none rgb(28, 28, 28)",
+      "borderBottom": "0px none rgb(28, 28, 28)",
+      "borderLeft": "0px none rgb(28, 28, 28)",
+      "borderRight": "0px none rgb(28, 28, 28)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(28, 28, 28) none 3px",
+      "filter": "none",
+      "overflow": "scroll hidden",
+      "padding": "0px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card__content",
+      "className": "card__content",
+      "tag": "div",
+      "rect": {
+        "w": 324.65625,
+        "h": 244.09375
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(28, 28, 28)",
+      "borderTop": "0px none rgb(28, 28, 28)",
+      "borderBottom": "0px none rgb(28, 28, 28)",
+      "borderLeft": "0px none rgb(28, 28, 28)",
+      "borderRight": "0px none rgb(28, 28, 28)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(28, 28, 28) none 3px",
+      "filter": "none",
+      "overflow": "visible",
+      "padding": "10px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card__information",
+      "className": "card__information",
+      "tag": "div",
+      "rect": {
+        "w": 0,
+        "h": 0
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(28, 28, 28)",
+      "borderTop": "0px none rgb(28, 28, 28)",
+      "borderBottom": "0px none rgb(28, 28, 28)",
+      "borderLeft": "0px none rgb(28, 28, 28)",
+      "borderRight": "0px none rgb(28, 28, 28)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(28, 28, 28) none 3px",
+      "filter": "none",
+      "overflow": "visible",
+      "padding": "0px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(28, 28, 28)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card__heading",
+      "className": "card__heading h3",
+      "tag": "p",
+      "rect": {
+        "w": 0,
+        "h": 0
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(38, 38, 38)",
+      "borderTop": "0px none rgb(38, 38, 38)",
+      "borderBottom": "0px none rgb(38, 38, 38)",
+      "borderLeft": "0px none rgb(38, 38, 38)",
+      "borderRight": "0px none rgb(38, 38, 38)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(38, 38, 38) none 3px",
+      "filter": "none",
+      "overflow": "visible",
+      "padding": "0px 0px 2px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(38, 38, 38)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(38, 38, 38)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card__content",
+      "className": "card__content",
+      "tag": "div",
+      "rect": {
+        "w": 324.65625,
+        "h": 169.8125
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(18, 18, 18)",
+      "borderTop": "0px none rgb(18, 18, 18)",
+      "borderBottom": "0px none rgb(18, 18, 18)",
+      "borderLeft": "0px none rgb(18, 18, 18)",
+      "borderRight": "0px none rgb(18, 18, 18)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(18, 18, 18) none 3px",
+      "filter": "none",
+      "overflow": "visible",
+      "padding": "16px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(18, 18, 18)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(18, 18, 18)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card__information",
+      "className": "card__information main-wrapper",
+      "tag": "div",
+      "rect": {
+        "w": 292.65625,
+        "h": 137.8125
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(18, 18, 18)",
+      "borderTop": "0px none rgb(18, 18, 18)",
+      "borderBottom": "0px none rgb(18, 18, 18)",
+      "borderLeft": "0px none rgb(18, 18, 18)",
+      "borderRight": "0px none rgb(18, 18, 18)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(18, 18, 18) none 3px",
+      "filter": "none",
+      "overflow": "visible",
+      "padding": "0px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(18, 18, 18)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(18, 18, 18)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "label": "card__heading",
+      "className": "card__heading clamp h5",
+      "tag": "h3",
+      "rect": {
+        "w": 292.65625,
+        "h": 26
+      },
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(38, 38, 38)",
+      "borderTop": "0px none rgb(38, 38, 38)",
+      "borderBottom": "0px none rgb(38, 38, 38)",
+      "borderLeft": "0px none rgb(38, 38, 38)",
+      "borderRight": "0px none rgb(38, 38, 38)",
+      "borderRadius": "0px",
+      "boxShadow": "none",
+      "outline": "rgb(38, 38, 38) none 3px",
+      "filter": "none",
+      "overflow": "hidden",
+      "padding": "0px 0px 2px",
+      "margin": "0px",
+      "before": {
+        "content": "none",
+        "border": "0px none rgb(38, 38, 38)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "inset": "auto",
+        "width": "auto",
+        "height": "auto",
+        "boxShadow": "none"
+      },
+      "after": {
+        "content": "none",
+        "border": "0px none rgb(38, 38, 38)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "boxShadow": "none"
+      }
+    }
+  ],
+  "sheetHints": [
+    {
+      "sel": ".card--card, .card--standard .card__inner",
+      "border": "var(--border-width) solid rgba(var(--color-foreground),var(--border-opacity))",
+      "borderWidth": "",
+      "borderColor": "",
+      "boxShadow": "",
+      "outline": ""
+    },
+    {
+      "sel": ".card--card::after, .card--standard .card__inner::after",
+      "border": "",
+      "borderWidth": "",
+      "borderColor": "",
+      "boxShadow": "var(--shadow-horizontal-offset) var(--shadow-vertical-offset) var(--shadow-blur-radius) rgba(var(--color-shadow),var(--shadow-opacity))",
+      "outline": ""
+    },
+    {
+      "sel": ".card--horizontal__quick-add::before",
+      "border": "",
+      "borderWidth": "",
+      "borderColor": "",
+      "boxShadow": "none",
+      "outline": ""
+    },
+    {
+      "sel": ".card--shape.card--standard:not(.card--text) .card__inner",
+      "border": "0px",
+      "borderWidth": "0px",
+      "borderColor": "currentcolor",
+      "boxShadow": "",
+      "outline": ""
+    },
+    {
+      "sel": ".product-card-wrapper .card--standard",
+      "border": "var(--product-card-border-width, 1px) solid var(--Surface-Outline-1, #dfded5)",
+      "borderWidth": "",
+      "borderColor": "",
+      "boxShadow": "",
+      "outline": ""
+    },
+    {
+      "sel": ".product-card-wrapper .card--standard .card__inner",
+      "border": "",
+      "borderWidth": "medium",
+      "borderColor": "currentcolor",
+      "boxShadow": "",
+      "outline": ""
+    },
+    {
+      "sel": ".product-card-wrapper .card--standard .card__inner::after",
+      "border": "",
+      "borderWidth": "",
+      "borderColor": "",
+      "boxShadow": "none",
+      "outline": ""
+    },
+    {
+      "sel": ".rebuy-widget .rebuy-product-grid .rebuy-product-block, .rebuy-recommended-products .rebuy-product-grid .rebuy-product-block",
+      "border": "1px solid var(--border-default, #dededb)",
+      "borderWidth": "",
+      "borderColor": "",
+      "boxShadow": "",
+      "outline": ""
+    },
+    {
+      "sel": ".cart-drawer--redesign .rebuy-widget .rebuy-product-grid .rebuy-product-block, .cart-drawer--redesign .rebuy-recommended-products .rebuy-product-grid .rebuy-product-block",
+      "border": "1px solid rgb(223, 222, 213)",
+      "borderWidth": "1px",
+      "borderColor": "rgb(223, 222, 213)",
+      "boxShadow": "",
+      "outline": ""
+    }
+  ]
+}

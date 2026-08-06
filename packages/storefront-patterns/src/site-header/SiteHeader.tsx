@@ -9,6 +9,9 @@ export type SiteHeaderNavItem = {
   children?: NavDropdownItem[];
   /** Dropdown layout override. */
   dropdownVariant?: "list" | "cards";
+  /** Mega-menu heading override. */
+  dropdownTitle?: string;
+  shopAllLabel?: string;
 };
 
 export type SiteHeaderProps = {
@@ -74,6 +77,9 @@ export function SiteHeader(props: SiteHeaderProps) {
                       href={item.href}
                       items={item.children!}
                       variant={item.dropdownVariant}
+                      panelTitle={item.dropdownTitle}
+                      shopAllHref={item.href}
+                      shopAllLabel={item.shopAllLabel}
                       active={isActive(item)}
                       align="center"
                       class="sh__dropdown"

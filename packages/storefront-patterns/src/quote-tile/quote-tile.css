@@ -2,7 +2,7 @@
   --qt-bg: #ebe6db;
   --qt-ink: #121212;
   --qt-muted: #5c5c56;
-  --qt-radius: 12px;
+  --qt-radius: 16px;
   height: 100%;
   border-radius: var(--qt-radius);
   background: var(--qt-bg);

@@ -1,6 +1,6 @@
 .cg {
   --cg-ink: #121212;
-  --cg-radius: 12px;
+  --cg-radius: 16px;
   color: var(--cg-ink);
   font-family: inherit;
 }
@@ -24,7 +24,7 @@
 .cg__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.5rem 1.25rem;
+  gap: 24px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -45,6 +45,13 @@
 .cg__cell[data-type="quote"],
 .cg__cell[data-type="trust"] {
   min-height: 22rem;
+}
+
+.cg__cell[data-type="promo"] .pm__frame,
+.cg__cell[data-type="quote"] .qt,
+.cg__cell[data-type="trust"] .tt {
+  border: 1px solid #dfded5;
+  border-radius: var(--cg-radius);
 }
 
 @media (max-width: 980px) {

@@ -1,7 +1,7 @@
 .tt {
   --tt-bg: #ebe6db;
   --tt-ink: #121212;
-  --tt-radius: 12px;
+  --tt-radius: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;

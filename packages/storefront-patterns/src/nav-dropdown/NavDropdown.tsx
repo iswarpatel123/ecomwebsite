@@ -17,6 +17,11 @@ export type NavDropdownProps = {
   items: NavDropdownItem[];
   /** `cards` shows image+label tiles; `list` is text links. Default: cards if any item has imageSrc. */
   variant?: "list" | "cards";
+  /** Mega-menu heading; defaults to `label`. */
+  panelTitle?: string;
+  /** CTA on the mega-menu header row. Defaults to `href`. */
+  shopAllHref?: string;
+  shopAllLabel?: string;
   /** Open on pointer enter. Default true. */
   openOnHover?: boolean;
   align?: "start" | "center" | "end";
@@ -187,6 +192,22 @@ export function NavDropdown(props: NavDropdownProps) {
           }}
         >
           <div class="nd__panel-inner">
+            <Show when={variant() === "cards"}>
+              <div class="nd__header">
+                <p class="nd__title">{props.panelTitle ?? props.label}</p>
+                <Show when={props.shopAllHref ?? props.href}>
+                  {(href) => (
+                    <a
+                      class="nd__shop-all"
+                      href={href()}
+                      onClick={() => setOpen(false)}
+                    >
+                      {props.shopAllLabel ?? "Shop all"}
+                    </a>
+                  )}
+                </Show>
+              </div>
+            </Show>
             <ul
               class="nd__items"
               classList={{
